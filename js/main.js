@@ -7,6 +7,17 @@ const fireTypeDescription = document.getElementById("fire-type-description");
 let selectedFireTypeKey = null; // null = follow the computed recommendation
 let hasCalculated = false;
 
+/** Fires a GoatCounter custom event; no-ops silently if analytics is blocked or unavailable. */
+function trackGoatCounterEvent(path) {
+  try {
+    if (window.goatcounter && typeof window.goatcounter.count === "function") {
+      window.goatcounter.count({ path, title: path, event: true });
+    }
+  } catch (e) {
+    // analytics is best-effort — never let it break the app
+  }
+}
+
 function populateStateDropdowns() {
   const options = Object.entries(STATE_DATA)
     .sort((a, b) => a[1].name.localeCompare(b[1].name))
@@ -376,7 +387,7 @@ function renderStaticContent() {
       <div class="info-card">
         <h4>${p.name} <span class="panel-tag">${p.category}</span></h4>
         <p>${p.description}</p>
-        <a href="${p.url}" target="_blank" rel="noopener sponsored" class="link-btn">Visit ${p.name} →</a>
+        <a href="${p.url}" target="_blank" rel="noopener sponsored" class="link-btn" data-goatcounter-click="affiliate-${p.name.toLowerCase().replace(/\s+/g, "-")}">Visit ${p.name} →</a>
       </div>
     `
   ).join("");
@@ -693,6 +704,7 @@ document.getElementById("email-capture-btn").addEventListener("click", () => {
       statusEl.textContent = "Thanks! Check your inbox shortly.";
       statusEl.className = "detect-status detect-status-ok";
       input.value = "";
+      trackGoatCounterEvent("email-capture-success");
     })
     .catch(() => {
       statusEl.textContent = "Couldn't submit right now — please try again later.";
