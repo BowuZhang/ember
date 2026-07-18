@@ -745,6 +745,11 @@ input:focus, select:focus {
   font-size: 0.9rem;
 }
 
+.milestone-cost {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));

@@ -24,6 +24,7 @@ function parseChildrenAges(text) {
 function buildFamilyPlan(input) {
   const { currentAge, childrenAges, includeCollegeCosts, collegeCostPerYear } = input;
   const costPerYear = collegeCostPerYear > 0 ? collegeCostPerYear : DEFAULT_COLLEGE_COST_PER_YEAR;
+  const costPerChild = costPerYear * COLLEGE_DURATION_YEARS;
 
   const extraExpensesByAge = {};
   const milestones = [];
@@ -34,7 +35,7 @@ function buildFamilyPlan(input) {
     const label = childrenAges.length > 1 ? `Child ${index + 1} starts college` : "Child starts college";
 
     if (yearsUntilCollege >= 0) {
-      milestones.push({ age: parentAgeAtCollegeStart, label });
+      milestones.push({ age: parentAgeAtCollegeStart, label, costImpact: includeCollegeCosts ? costPerChild : 0 });
       if (includeCollegeCosts) {
         for (let y = 0; y < COLLEGE_DURATION_YEARS; y++) {
           const age = parentAgeAtCollegeStart + y;
@@ -42,26 +43,36 @@ function buildFamilyPlan(input) {
         }
       }
     } else {
-      milestones.push({ age: currentAge, label: `${label} (already in college)` });
+      milestones.push({ age: currentAge, label: `${label} (already in college)`, costImpact: 0 });
     }
   });
 
   milestones.sort((a, b) => a.age - b.age);
-  return { extraExpensesByAge, milestones, costPerYear };
+  const totalCollegeCost = Object.values(extraExpensesByAge).reduce((sum, v) => sum + v, 0);
+  const upcomingChildCount = childrenAges.filter((age) => COLLEGE_START_AGE - age >= 0).length;
+  return { extraExpensesByAge, milestones, costPerYear, costPerChild, totalCollegeCost, upcomingChildCount };
 }
 
-/** A short, situational note — no assumptions based on gender, just timing. */
-function buildFamilySuggestion(input) {
-  const { currentAge, childrenAges } = input;
+/**
+ * A short, situational note that spells out exactly what's added and where
+ * it shows up — no assumptions based on gender, just timing and dollars.
+ */
+function buildFamilySuggestion(input, familyPlan) {
+  const { childrenAges, includeCollegeCosts } = input;
   if (childrenAges.length === 0) {
     return "No children entered — add ages above if you want college costs and milestones reflected in your plan.";
   }
   const nextToStart = Math.min(...childrenAges.map((age) => COLLEGE_START_AGE - age));
-  if (nextToStart < 0) {
+  if (nextToStart < 0 && familyPlan.upcomingChildCount === 0) {
     return "At least one child is already college-aged — factor in any ongoing tuition support directly in your annual spending above.";
   }
-  if (nextToStart === 0) {
-    return "A child starts college this year — this is a good time to line up 529 withdrawals or other funding sources.";
+
+  const whenText = nextToStart <= 0 ? "starting this year" : `starting in about ${nextToStart} year${nextToStart === 1 ? "" : "s"}`;
+
+  if (!includeCollegeCosts) {
+    const wouldAddTotal = familyPlan.costPerChild * familyPlan.upcomingChildCount;
+    return `Milestones below will show when each child starts college (${whenText}), but the cost isn't added to your plan yet. Check "Include estimated college costs" to add an estimated ${currency(wouldAddTotal)} total (${currency(familyPlan.costPerYear)}/yr for ${COLLEGE_DURATION_YEARS} years per child) directly to your projected balance in those years — shown as dips in the chart below. It won't change your FIRE number, which is based on your ongoing living expenses, not one-time costs.`;
   }
-  return `You have about ${nextToStart} year${nextToStart === 1 ? "" : "s"} until your next child starts college — a 529 plan or dedicated education fund can reduce the hit to your retirement portfolio shown below.`;
+
+  return `We're adding ${currency(familyPlan.totalCollegeCost)} total to your plan — ${currency(familyPlan.costPerYear)}/yr for ${COLLEGE_DURATION_YEARS} years per child, ${whenText}. You'll see it as dips in your projected balance chart and noted on each milestone below; it doesn't change your FIRE number or annual withdrawal target, which are based on ongoing living expenses.`;
 }

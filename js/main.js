@@ -313,12 +313,17 @@ function render(input) {
   renderFireTypeTabs(computedFireKey);
 
   // --- Family ---
-  document.getElementById("family-suggestion").textContent = buildFamilySuggestion(familyInput);
+  document.getElementById("family-suggestion").textContent = buildFamilySuggestion(familyInput, familyPlan);
   const familyMilestonesEl = document.getElementById("family-milestones");
   familyMilestonesEl.innerHTML =
     familyPlan.milestones.length === 0
       ? ""
-      : familyPlan.milestones.map((m) => `<li>${m.label} — you'll be about age ${m.age}</li>`).join("");
+      : familyPlan.milestones
+          .map(
+            (m) =>
+              `<li>${m.label} — you'll be about age ${m.age}${m.costImpact > 0 ? ` <span class="milestone-cost">(adds ${currency(m.costImpact)} to your plan)</span>` : ""}</li>`
+          )
+          .join("");
 
   // --- Life after retirement ---
   document.getElementById("life-after-intro").textContent = buildLifeAfterIntro(input, familyInput.childrenAges);
