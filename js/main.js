@@ -753,6 +753,8 @@ function clearLastPlan() {
 
 document.getElementById("clear-saved-btn").addEventListener("click", () => {
   clearLastPlan();
+  clearQuizState();
+  resetQuiz();
   showPlanIOStatus("Saved data cleared from this browser.", false);
 });
 
@@ -868,13 +870,58 @@ document.getElementById("save-scenario-btn").addEventListener("click", () => {
 let quizIndex = 0;
 let quizScores = {};
 
+const QUIZ_STORAGE_KEY = "ember-quiz-state";
+
+function saveQuizState(completed) {
+  try {
+    localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify({ quizIndex, quizScores, completed: !!completed }));
+  } catch (e) {
+    // localStorage unavailable — fail silently
+  }
+}
+
+function loadQuizState() {
+  try {
+    const raw = localStorage.getItem(QUIZ_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearQuizState() {
+  try {
+    localStorage.removeItem(QUIZ_STORAGE_KEY);
+  } catch (e) {
+    // ignore
+  }
+}
+
 function resetQuiz() {
   quizIndex = 0;
   quizScores = {};
   QUIZ_TYPE_ORDER.forEach((t) => (quizScores[t] = 0));
+  clearQuizState();
   document.getElementById("quiz-result-container").hidden = true;
   document.getElementById("quiz-question-container").hidden = false;
   renderQuizQuestion();
+}
+
+/** Restores a completed result or in-progress answers from a previous visit; starts fresh otherwise. */
+function initQuiz() {
+  const saved = loadQuizState();
+  if (saved && saved.completed && saved.quizScores) {
+    quizScores = saved.quizScores;
+    showQuizResult(true);
+  } else if (saved && saved.quizIndex > 0 && saved.quizScores) {
+    quizIndex = saved.quizIndex;
+    quizScores = saved.quizScores;
+    document.getElementById("quiz-result-container").hidden = true;
+    document.getElementById("quiz-question-container").hidden = false;
+    renderQuizQuestion();
+  } else {
+    resetQuiz();
+  }
 }
 
 function renderQuizQuestion() {
@@ -891,8 +938,12 @@ function renderQuizQuestion() {
     btn.addEventListener("click", () => {
       quizScores[btn.getAttribute("data-type")]++;
       quizIndex++;
-      if (quizIndex < QUIZ_QUESTIONS.length) renderQuizQuestion();
-      else showQuizResult();
+      if (quizIndex < QUIZ_QUESTIONS.length) {
+        saveQuizState(false);
+        renderQuizQuestion();
+      } else {
+        showQuizResult();
+      }
     });
   });
 }
@@ -913,14 +964,16 @@ function buildPersonalityResultCard(key) {
   `;
 }
 
-function showQuizResult() {
+function showQuizResult(restored) {
   document.getElementById("quiz-question-container").hidden = true;
   const maxScore = Math.max(...Object.values(quizScores));
   const winners = QUIZ_TYPE_ORDER.filter((t) => quizScores[t] === maxScore);
   const resultEl = document.getElementById("quiz-result-container");
   resultEl.hidden = false;
-  const intro =
-    winners.length > 1
+  saveQuizState(true);
+  const intro = restored
+    ? `<p class="quiz-tie-note">Picked up from your last visit — hit "Retake the quiz" for a fresh result.</p>`
+    : winners.length > 1
       ? `<p class="quiz-tie-note">🎉 It's a close one — you're a genuine blend of ${winners.length} types:</p>`
       : "";
   resultEl.innerHTML = `
@@ -981,7 +1034,7 @@ function selectPersonalityTab(key) {
 populateStateDropdowns();
 renderStaticContent();
 renderScenarios();
-resetQuiz();
+initQuiz();
 renderPersonalityTabs(activePersonalityKey);
 const initialView = parseInitialHash();
 attemptRender(false);
