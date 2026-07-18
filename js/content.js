@@ -194,3 +194,42 @@ const TAX_STRATEGIES = [
     body: "Placing tax-inefficient investments (bonds, REITs) in tax-deferred or Roth accounts, and tax-efficient ones (broad index funds) in taxable accounts, can reduce the tax drag on your portfolio independent of your overall asset allocation.",
   },
 ];
+
+/** Maps an age to the matching RETIREMENT_STATS_BY_AGE bracket label. */
+function ageToBracketLabel(age) {
+  if (age < 35) return "Under 35";
+  if (age < 45) return "35–44";
+  if (age < 55) return "45–54";
+  if (age < 65) return "55–64";
+  if (age < 75) return "65–74";
+  return "75+";
+}
+
+/** A short, human sentence describing where a net worth ranks among NET_WORTH_PERCENTILES. */
+function describeNetWorthRank(netWorth) {
+  const sorted = NET_WORTH_PERCENTILES; // already ordered richest-first, median last
+  for (const tier of sorted) {
+    if (netWorth >= tier.netWorth) {
+      return `puts you above the ${tier.label.toLowerCase()} threshold (~${(tier.netWorth).toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })})`;
+    }
+  }
+  return "is below the national median";
+}
+
+/** A short, state-aware callout for the Tax Savings Strategies page, using the calculator's saved state. */
+function describeTaxPersonalization(input) {
+  const stateInfo = STATE_DATA[input.stateCode];
+  if (!stateInfo) return "";
+  const rateText =
+    stateInfo.effectiveRetirementTaxRate === 0
+      ? `${stateInfo.name} doesn't tax retirement withdrawals`
+      : `${stateInfo.name} taxes retirement withdrawals at roughly ${(stateInfo.effectiveRetirementTaxRate * 100).toFixed(1)}% effectively`;
+  const ssNote = stateInfo.taxesSocialSecurity
+    ? " and also taxes Social Security benefits"
+    : "";
+  const focus =
+    input.currentAge >= 55
+      ? "Qualified Charitable Distributions and asset location are especially worth a look as you approach withdrawals."
+      : "Maxing tax-advantaged space (HSA, mega backdoor Roth, tax-loss harvesting) has the most runway to compound before you retire.";
+  return `Based on your calculator inputs: ${rateText}${ssNote}. ${focus}`;
+}

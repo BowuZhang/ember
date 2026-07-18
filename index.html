@@ -14,7 +14,10 @@
 </head>
 <body>
   <nav class="topnav">
-    <button class="topnav-brand" data-view="home">🔥 Ember</button>
+    <button class="topnav-brand" data-view="home">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.4 1.7c.9 2.7-1.6 4.6-2.9 6.9-1.5 2.6-1.6 5.4.2 7.6-1.1-2.4.1-4 1.6-5.4-.1 2 1 3.1 2.2 4.1 1.7 1.4 2.5 3 2.5 4.6a5.6 5.6 0 0 1-11.2 0c0-3.6 1.9-5.7 3.5-7.7 1.7-2.1 2-4.7.8-7.2 1.9.3 3.6-1 3.3-2.9z"/></svg>
+      <span>Ember</span>
+    </button>
     <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu" aria-expanded="false" aria-controls="topnav-links">☰</button>
     <div class="topnav-links" id="topnav-links">
       <button class="topnav-link" data-view="calculator">Calculator</button>
@@ -63,7 +66,7 @@
       </div>
     </main>
     <footer class="page-footer">
-      <p>All calculations happen locally in your browser. Detecting your state (optional) sends your coordinates to a free public location-lookup service. Saved scenarios live only in this browser's local storage. Emailing yourself a plan (optional) sends only your email address to our form provider — nothing about your actual numbers leaves your browser. We use cookie-free, privacy-respecting analytics (GoatCounter) that count page visits without collecting any personal data.</p>
+      <p>All calculations happen locally in your browser. Detecting your state (optional) sends your coordinates to a free public location-lookup service. Your calculator inputs and saved scenarios live only in this browser's local storage — never sent anywhere — and auto-load next time you visit; use "Clear saved data" to remove them. Emailing yourself a plan (optional) sends only your email address to our form provider — nothing about your actual numbers leaves your browser. We use cookie-free, privacy-respecting analytics (GoatCounter) that count page visits without collecting any personal data.</p>
     </footer>
   </div>
 
@@ -249,10 +252,11 @@
               <button type="button" id="download-plan-btn" class="secondary-btn">Download plan</button>
               <button type="button" id="load-plan-btn" class="secondary-btn">Load plan</button>
               <button type="button" id="copy-link-btn" class="secondary-btn">Copy link</button>
+              <button type="button" id="clear-saved-btn" class="secondary-btn">Clear saved data</button>
               <input type="file" id="load-plan-file" accept="application/json" hidden>
             </div>
             <span id="plan-io-status" class="detect-status no-print"></span>
-            <p class="disclaimer no-print">"Save as PDF" opens your browser's print dialog. "Download plan" saves your inputs as a small file you can reload later with "Load plan." "Copy link" encodes your inputs into a URL.</p>
+            <p class="disclaimer no-print">"Save as PDF" opens your browser's print dialog. "Download plan" saves your inputs as a small file you can reload later with "Load plan." "Copy link" encodes your inputs into a URL. Your inputs are also auto-saved in this browser so they're here next time you visit — use "Clear saved data" to remove them.</p>
 
             <h3 class="no-print">Get this plan by email</h3>
             <p class="panel-intro no-print">Optional — we'll only use this to send your plan and occasional retirement tips. Unsubscribe anytime.</p>
@@ -531,21 +535,10 @@
           <p class="disclaimer">Comparison uses each scenario's core numbers only — Social Security, mortgage, healthcare, and family adjustments aren't included here.</p>
         </div>
       </section>
-
-      <section class="panel" id="panel-life-after">
-        <button class="panel-toggle" aria-expanded="false" aria-controls="panel-life-after-body">
-          <h2>Life after retirement</h2>
-          <span class="chevron" aria-hidden="true"></span>
-        </button>
-        <div class="panel-body" id="panel-life-after-body" hidden>
-          <p id="life-after-intro" class="panel-intro">The transition into retirement is as much about time and purpose as it is about money. A few areas worth planning deliberately:</p>
-          <div id="life-after-categories" class="card-grid"></div>
-        </div>
-      </section>
     </main>
 
     <footer class="page-footer">
-      <p>All calculations happen locally in your browser. Detecting your state (optional) sends your coordinates to a free public location-lookup service. Saved scenarios live only in this browser's local storage. Emailing yourself a plan (optional) sends only your email address to our form provider — nothing about your actual numbers leaves your browser. We use cookie-free, privacy-respecting analytics (GoatCounter) that count page visits without collecting any personal data.</p>
+      <p>All calculations happen locally in your browser. Detecting your state (optional) sends your coordinates to a free public location-lookup service. Your calculator inputs and saved scenarios live only in this browser's local storage — never sent anywhere — and auto-load next time you visit; use "Clear saved data" to remove them. Emailing yourself a plan (optional) sends only your email address to our form provider — nothing about your actual numbers leaves your browser. We use cookie-free, privacy-respecting analytics (GoatCounter) that count page visits without collecting any personal data.</p>
     </footer>
   </div>
 
@@ -564,6 +557,7 @@
           have one — most households without an account would otherwise pull that figure toward zero and
           make the comparison misleading.
         </p>
+        <p id="stats-personal-callout" class="personal-callout" hidden></p>
         <div id="stats-chart-container" class="chart-container"></div>
         <div class="table-scroll">
           <table class="data-table">
@@ -615,6 +609,7 @@
     <main>
       <section class="panel">
         <h2>Strategies</h2>
+        <p id="tax-personal-callout" class="personal-callout" hidden></p>
         <div id="tax-strategies-grid" class="card-grid"></div>
         <p class="disclaimer">Contribution limits shown are approximate for 2024/2025 and are adjusted for inflation annually — verify current limits at irs.gov before acting. This is educational information, not tax advice.</p>
       </section>
@@ -651,6 +646,12 @@
         <div class="personality-tabs" id="personality-tabs"></div>
         <div id="personality-detail"></div>
       </section>
+
+      <section class="panel">
+        <h2>Life after retirement</h2>
+        <p id="life-after-intro" class="panel-intro">The transition into retirement is as much about time and purpose as it is about money. A few areas worth planning deliberately:</p>
+        <div id="life-after-categories" class="card-grid"></div>
+      </section>
     </main>
   </div>
 
@@ -673,10 +674,8 @@
 
   <!--
     Privacy-respecting, cookie-free visitor analytics (GoatCounter — free,
-    open-source, collects no personal data). Sign up at goatcounter.com,
-    then replace REPLACE-WITH-YOUR-CODE below with your real site code.
-    Until then this silently does nothing (no valid endpoint to report to).
+    open-source, collects no personal data).
   -->
-  <script data-goatcounter="https://REPLACE-WITH-YOUR-CODE.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+  <script data-goatcounter="https://ember.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

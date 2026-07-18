@@ -285,16 +285,17 @@ function renderMonteCarloFanChart(containerEl, bands, retirementAge) {
 }
 
 /** Grouped bar chart: two series (e.g. net worth vs. retirement balance) per labeled category. */
-function renderGroupedBarChart(containerEl, categories, seriesA, seriesB) {
+function renderGroupedBarChart(containerEl, categories, seriesA, seriesB, userMarker) {
   const width = Math.max(280, Math.min(720, containerEl.clientWidth || 720));
   const isNarrow = width < 420;
   const height = isNarrow ? 300 : 340;
-  const margin = { top: 20, right: isNarrow ? 8 : 20, bottom: isNarrow ? 54 : 46, left: isNarrow ? 46 : 64 };
+  const margin = { top: userMarker ? 40 : 20, right: isNarrow ? 8 : 20, bottom: isNarrow ? 54 : 46, left: isNarrow ? 46 : 64 };
   const tickFontSize = isNarrow ? 10 : 12;
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
 
-  const maxVal = Math.max(...categories.map((c) => Math.max(c[seriesA.key], c[seriesB.key]))) * 1.1;
+  const rawMax = Math.max(...categories.map((c) => Math.max(c[seriesA.key], c[seriesB.key])), userMarker ? userMarker.value : 0);
+  const maxVal = rawMax * 1.1;
   const yScale = (v) => margin.top + innerH - (v / maxVal) * innerH;
 
   const groupWidth = innerW / categories.length;
@@ -313,12 +314,16 @@ function renderGroupedBarChart(containerEl, categories, seriesA, seriesB) {
   }
 
   let bars = "";
+  let markerX = null;
   categories.forEach((cat, i) => {
     const groupX = margin.left + i * groupWidth;
     const xA = groupX + barGap;
     const xB = xA + barWidth + barGap;
     const yA = yScale(cat[seriesA.key]);
     const yB = yScale(cat[seriesB.key]);
+    if (userMarker && cat.label === userMarker.categoryLabel) {
+      markerX = groupX + groupWidth / 2;
+    }
     bars += `
       <rect x="${xA.toFixed(1)}" y="${yA.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${(margin.top + innerH - yA).toFixed(1)}" fill="${seriesA.color}" rx="2" />
       <rect x="${xB.toFixed(1)}" y="${yB.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${(margin.top + innerH - yB).toFixed(1)}" fill="${seriesB.color}" rx="2" />
@@ -326,14 +331,27 @@ function renderGroupedBarChart(containerEl, categories, seriesA, seriesB) {
     `;
   });
 
+  let markerMarkup = "";
+  if (userMarker && markerX !== null) {
+    const mx = markerX.toFixed(1);
+    const my = Number(yScale(userMarker.value).toFixed(1));
+    markerMarkup = `
+      <line x1="${mx}" y1="${margin.top - 12}" x2="${mx}" y2="${my}" class="chart-user-marker-line" />
+      <path d="M ${mx} ${my - 7} L ${Number(mx) + 7} ${my} L ${mx} ${my + 7} L ${Number(mx) - 7} ${my} Z" class="chart-user-marker" />
+      <text x="${mx}" y="${margin.top - 16}" class="chart-user-marker-label" font-size="${tickFontSize}" text-anchor="middle">${userMarker.label}</text>
+    `;
+  }
+
   containerEl.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" class="projection-svg" role="img" aria-label="${seriesA.label} versus ${seriesB.label} by age bracket">
+    <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" class="projection-svg" role="img" aria-label="${seriesA.label} versus ${seriesB.label} by age bracket${userMarker ? ", with your own position marked" : ""}">
       ${yTicks}
       ${bars}
+      ${markerMarkup}
     </svg>
     <div class="chart-legend">
       <span><i class="legend-swatch" style="background:${seriesA.color}"></i>${seriesA.label}</span>
       <span><i class="legend-swatch" style="background:${seriesB.color}"></i>${seriesB.label}</span>
+      ${userMarker ? `<span><i class="legend-swatch chart-user-marker-swatch"></i>${userMarker.legendLabel || "You"}</span>` : ""}
     </div>
   `;
 }

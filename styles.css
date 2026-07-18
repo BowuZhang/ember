@@ -44,10 +44,20 @@ h1, h2, h3, h4 {
   background: none;
   border: none;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--accent-dark);
+}
+
+.brand-mark {
+  width: 1.3rem;
+  height: 1.3rem;
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .hamburger-btn {
@@ -330,6 +340,15 @@ main {
   margin-bottom: 1rem;
 }
 
+.personal-callout {
+  background: var(--accent-soft, rgba(31, 122, 92, 0.08));
+  border-left: 3px solid var(--accent);
+  padding: 0.7rem 0.9rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
 .link-btn {
   background: none;
   border: none;
@@ -556,6 +575,28 @@ input:focus, select:focus {
 .legend-federal { background: #8a5cb0; }
 .legend-state { background: #c07a1e; }
 .legend-mc-band { background: rgba(31, 122, 92, 0.25); }
+
+.chart-user-marker {
+  fill: #b3541e;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+
+.chart-user-marker-line {
+  stroke: #b3541e;
+  stroke-width: 1.5;
+  stroke-dasharray: 2 3;
+}
+
+.chart-user-marker-label {
+  fill: #b3541e;
+  font-weight: 600;
+}
+
+.chart-user-marker-swatch {
+  background: #b3541e;
+  border-radius: 50%;
+}
 
 .mc-band {
   fill: rgba(31, 122, 92, 0.18);

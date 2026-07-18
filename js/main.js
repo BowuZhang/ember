@@ -311,6 +311,50 @@ function render(input) {
 
   // --- Life after retirement ---
   document.getElementById("life-after-intro").textContent = buildLifeAfterIntro(input, familyInput.childrenAges);
+
+  // --- Cross-page personalization (Statistics + Tax Strategies) ---
+  renderStatsChart();
+  renderTaxPersonalization();
+
+  saveLastPlan();
+}
+
+/** Renders the net-worth-by-age bar chart, adding a "you are here" marker once calculator data exists. */
+function renderStatsChart() {
+  let userMarker = null;
+  const calloutEl = document.getElementById("stats-personal-callout");
+  if (lastInput) {
+    const bracketLabel = ageToBracketLabel(lastInput.currentAge);
+    userMarker = {
+      categoryLabel: bracketLabel,
+      value: lastInput.currentPortfolio,
+      label: "You: " + formatCurrencyShort(lastInput.currentPortfolio),
+      legendLabel: `You (age ${lastInput.currentAge})`,
+    };
+    calloutEl.textContent = `Based on your calculator inputs: your current portfolio of ${currency(lastInput.currentPortfolio)} ${describeNetWorthRank(lastInput.currentPortfolio)}, compared to the ${bracketLabel} age bracket shown below.`;
+    calloutEl.hidden = false;
+  } else {
+    calloutEl.hidden = true;
+  }
+  renderGroupedBarChart(
+    document.getElementById("stats-chart-container"),
+    RETIREMENT_STATS_BY_AGE,
+    { key: "netWorth", label: "Median net worth (all households)", color: "#1f7a5c" },
+    { key: "retirementBalance", label: "Median retirement balance (households with one)", color: "#8a5cb0" },
+    userMarker
+  );
+}
+
+/** Fills in the state-aware personalization callout on the Tax Savings Strategies page. */
+function renderTaxPersonalization() {
+  const calloutEl = document.getElementById("tax-personal-callout");
+  if (!calloutEl) return;
+  if (lastInput) {
+    calloutEl.textContent = describeTaxPersonalization(lastInput);
+    calloutEl.hidden = false;
+  } else {
+    calloutEl.hidden = true;
+  }
 }
 
 function renderStaticContent() {
@@ -337,12 +381,7 @@ function renderStaticContent() {
     `
   ).join("");
 
-  renderGroupedBarChart(
-    document.getElementById("stats-chart-container"),
-    RETIREMENT_STATS_BY_AGE,
-    { key: "netWorth", label: "Median net worth (all households)", color: "#1f7a5c" },
-    { key: "retirementBalance", label: "Median retirement balance (households with one)", color: "#8a5cb0" }
-  );
+  renderStatsChart();
   document.getElementById("stats-table-body").innerHTML = RETIREMENT_STATS_BY_AGE.map(
     (row) => `<tr><td>${row.label}</td><td>${currency(row.netWorth)}</td><td>${currency(row.retirementBalance)}</td></tr>`
   ).join("");
@@ -661,6 +700,40 @@ document.getElementById("email-capture-btn").addEventListener("click", () => {
     });
 });
 
+// --- Auto-save/restore calculator inputs (localStorage) ---
+
+const PLAN_STORAGE_KEY = "ember-last-plan";
+
+function saveLastPlan() {
+  try {
+    localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(serializePlan()));
+  } catch (e) {
+    // localStorage unavailable (private browsing, quota, etc.) — fail silently
+  }
+}
+
+function loadLastPlan() {
+  try {
+    const raw = localStorage.getItem(PLAN_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearLastPlan() {
+  try {
+    localStorage.removeItem(PLAN_STORAGE_KEY);
+  } catch (e) {
+    // ignore
+  }
+}
+
+document.getElementById("clear-saved-btn").addEventListener("click", () => {
+  clearLastPlan();
+  showPlanIOStatus("Saved data cleared from this browser.", false);
+});
+
 function parseInitialHash() {
   const raw = location.hash.slice(1);
   const [viewPart, queryPart] = raw.split("?");
@@ -669,6 +742,15 @@ function parseInitialHash() {
       applyPlan(Object.fromEntries(new URLSearchParams(queryPart)));
     } catch (e) {
       // ignore malformed shared links
+    }
+  } else {
+    const saved = loadLastPlan();
+    if (saved) {
+      try {
+        applyPlan(saved);
+      } catch (e) {
+        // ignore corrupted saved data
+      }
     }
   }
   return viewPart || "home";
