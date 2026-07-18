@@ -274,7 +274,23 @@ function render(input) {
   fireTypeBadge.textContent = fireType.label;
   fireTypeDescription.textContent = fireType.description;
 
-  renderProjectionChart(document.getElementById("chart-container"), result.points, result.fireNumber, input.retirementAge);
+  const RMD_START_AGE = 73;
+  const projectionMarkers = [];
+  if (ssPlan.annualBenefit > 0) {
+    projectionMarkers.push({
+      age: ssInput.claimAge,
+      label: "Social Security",
+      lineClass: "chart-ss-line",
+      labelClass: "chart-ss-label",
+    });
+  }
+  projectionMarkers.push({
+    age: RMD_START_AGE,
+    label: "RMDs begin",
+    lineClass: "chart-rmd-line",
+    labelClass: "chart-rmd-label",
+  });
+  renderProjectionChart(document.getElementById("chart-container"), result.points, result.fireNumber, input.retirementAge, projectionMarkers);
   renderContributionGrowthChart(
     document.getElementById("contribution-chart-container"),
     result.points,

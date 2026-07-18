@@ -15,12 +15,29 @@ function formatCurrencyShort(value) {
   return "$" + Math.round(value);
 }
 
-function renderProjectionChart(containerEl, points, fireNumber, retirementAge) {
+/**
+ * @param {Array} [extraMarkers] additional vertical age markers besides
+ *   retirement, e.g. [{ age, label, lineClass, labelClass }] for Social
+ *   Security start and RMDs. Markers outside the plotted age range are
+ *   skipped; labels stack above the chart in the order given.
+ */
+function renderProjectionChart(containerEl, points, fireNumber, retirementAge, extraMarkers = []) {
   const width = Math.max(280, Math.min(720, containerEl.clientWidth || 720));
   const isNarrow = width < 420;
   const height = isNarrow ? 260 : 340;
+  const labelRowHeight = isNarrow ? 13 : 15;
+
+  const ages = points.map((p) => p.age);
+  const minAge = Math.min(...ages);
+  const maxAge = Math.max(...ages);
+
+  const allMarkers = [
+    { age: retirementAge, label: "Retirement", lineClass: "chart-retire-line", labelClass: "chart-retire-label" },
+    ...extraMarkers,
+  ].filter((m) => m.age >= minAge && m.age <= maxAge);
+
   const margin = {
-    top: isNarrow ? 26 : 20,
+    top: (isNarrow ? 16 : 14) + allMarkers.length * labelRowHeight,
     right: isNarrow ? 8 : 20,
     bottom: isNarrow ? 32 : 36,
     left: isNarrow ? 46 : 64,
@@ -29,10 +46,7 @@ function renderProjectionChart(containerEl, points, fireNumber, retirementAge) {
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
 
-  const ages = points.map((p) => p.age);
   const balances = points.map((p) => p.balance);
-  const minAge = Math.min(...ages);
-  const maxAge = Math.max(...ages);
   const maxBalance = Math.max(...balances, fireNumber) * 1.08;
 
   const xScale = (age) => margin.left + ((age - minAge) / (maxAge - minAge)) * innerW;
@@ -43,7 +57,6 @@ function renderProjectionChart(containerEl, points, fireNumber, retirementAge) {
     .join(" ");
 
   const fireY = yScale(fireNumber).toFixed(1);
-  const retireX = xScale(retirementAge).toFixed(1);
 
   // Y-axis gridlines/labels
   const tickCount = isNarrow ? 4 : 5;
@@ -66,13 +79,23 @@ function renderProjectionChart(containerEl, points, fireNumber, retirementAge) {
     xTicks += `<text x="${x}" y="${height - margin.bottom + 18}" class="chart-axis-label" font-size="${tickFontSize}" text-anchor="middle">${age}</text>`;
   }
 
+  const markerMarkup = allMarkers
+    .map((m, i) => {
+      const x = xScale(m.age).toFixed(1);
+      const labelY = margin.top - 8 - i * labelRowHeight;
+      return `
+        <line x1="${x}" y1="${margin.top}" x2="${x}" y2="${height - margin.bottom}" class="${m.lineClass}" />
+        <text x="${x}" y="${labelY}" class="${m.labelClass}" font-size="${tickFontSize}" text-anchor="middle">${m.label}</text>
+      `;
+    })
+    .join("");
+
   containerEl.innerHTML = `
     <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" class="projection-svg" role="img" aria-label="Projected portfolio balance by age">
       ${yTicks}
       <line x1="${margin.left}" y1="${fireY}" x2="${width - margin.right}" y2="${fireY}" class="chart-fire-line" />
       <text x="${width - margin.right}" y="${Number(fireY) - 6}" class="chart-fire-label" font-size="${tickFontSize}" text-anchor="end">FIRE number</text>
-      <line x1="${retireX}" y1="${margin.top}" x2="${retireX}" y2="${height - margin.bottom}" class="chart-retire-line" />
-      <text x="${retireX}" y="${margin.top - 8}" class="chart-retire-label" font-size="${tickFontSize}" text-anchor="middle">Retirement</text>
+      ${markerMarkup}
       <path d="${linePath}" class="chart-line" fill="none" />
       ${xTicks}
       <text x="${(width) / 2}" y="${height - 4}" class="chart-axis-title" font-size="${tickFontSize}" text-anchor="middle">Age</text>

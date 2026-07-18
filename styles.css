@@ -538,6 +538,26 @@ input:focus, select:focus {
   fill: var(--muted);
 }
 
+.chart-ss-line {
+  stroke: #1a73a8;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart-ss-label {
+  fill: #1a73a8;
+}
+
+.chart-rmd-line {
+  stroke: #8a5cb0;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart-rmd-label {
+  fill: #8a5cb0;
+}
+
 .area-contrib {
   fill: #a8c9bd;
   opacity: 0.9;
