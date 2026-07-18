@@ -464,31 +464,24 @@ document.querySelectorAll('input[type="range"]').forEach((slider) => {
   slider.addEventListener("input", updateOutput);
 });
 
-// --- Location detection (opt-in) ---
+// --- Location detection (automatic, browser permission prompt gates it) ---
 
-const detectBtn = document.getElementById("detect-state-btn");
 const detectStatus = document.getElementById("detect-state-status");
 
-detectBtn.addEventListener("click", () => {
-  detectBtn.disabled = true;
-  const originalLabel = detectBtn.textContent;
-  detectBtn.textContent = "Detecting…";
-  detectStatus.textContent = "";
+/** Auto-detects the user's state on first visit only — never overrides a shared-link or restored plan. */
+function maybeAutoDetectState() {
+  const hasQueryPlan = location.hash.includes("?");
+  const hasSavedPlan = !!loadLastPlan();
+  if (hasQueryPlan || hasSavedPlan) return;
 
   detectMyState((error, stateCode) => {
-    detectBtn.disabled = false;
-    detectBtn.textContent = originalLabel;
-    if (error) {
-      detectStatus.textContent = error.message;
-      detectStatus.className = "detect-status detect-status-error";
-      return;
-    }
+    if (error) return; // permission denied or lookup failed — keep the default state, no error noise
     stateSelect.value = stateCode;
     detectStatus.textContent = `Detected: ${STATE_DATA[stateCode].name}`;
     detectStatus.className = "detect-status detect-status-ok";
     attemptRender(false);
   });
-});
+}
 
 document.getElementById("see-fire-plan-link").addEventListener("click", () => {
   showView("calculator");
@@ -1044,3 +1037,4 @@ renderPersonalityTabs(activePersonalityKey);
 const initialView = parseInitialHash();
 attemptRender(false);
 showView(initialView);
+maybeAutoDetectState();

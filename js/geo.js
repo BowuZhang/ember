@@ -1,9 +1,10 @@
 /**
- * Optional, explicit-consent location detection: the browser's Geolocation
- * API (which already prompts the user for permission) followed by a
- * reverse-geocode lookup against BigDataCloud's free, keyless client-side
- * endpoint to turn coordinates into a US state. Only runs when the user
- * clicks the "Detect my state" button — never automatically.
+ * Location detection: the browser's Geolocation API (which prompts the user
+ * for permission — nothing runs without that native consent dialog) followed
+ * by a reverse-geocode lookup against BigDataCloud's free, keyless
+ * client-side endpoint to turn coordinates into a US state. Runs
+ * automatically on a first visit with no saved or shared plan, purely to
+ * pick a better starting default than a hardcoded state.
  */
 
 function detectMyState(callback) {
