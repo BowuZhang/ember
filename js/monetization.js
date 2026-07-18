@@ -33,4 +33,7 @@ const AFFILIATE_PARTNERS = [
   },
 ];
 
-const EMAIL_CAPTURE_ENDPOINT = "https://formspree.io/f/xnjedbad";
+// Kit (formerly ConvertKit) public form-subscription endpoint. Safe to
+// expose client-side — no API key involved, this is the same URL Kit's
+// own embeddable forms post to from any site.
+const EMAIL_CAPTURE_ENDPOINT = "https://app.kit.com/forms/9699438/subscriptions";

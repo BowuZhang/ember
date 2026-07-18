@@ -694,14 +694,24 @@ document.getElementById("email-capture-btn").addEventListener("click", () => {
     statusEl.className = "detect-status detect-status-error";
     return;
   }
+  const body = new FormData();
+  body.append("email_address", email);
   fetch(EMAIL_CAPTURE_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ email, source: "ember-retirement-planner" }),
+    headers: { Accept: "application/json" },
+    body,
   })
     .then((res) => {
       if (!res.ok) throw new Error("bad response");
-      statusEl.textContent = "Thanks! Check your inbox shortly.";
+      return res.json();
+    })
+    .then((data) => {
+      if (data.status === "quarantined" && data.url) {
+        window.open(data.url, "_blank", "noopener");
+        statusEl.textContent = "Almost there — we opened a quick verification step in a new tab. Confirm there to finish subscribing.";
+      } else {
+        statusEl.textContent = "Thanks! Check your inbox shortly.";
+      }
       statusEl.className = "detect-status detect-status-ok";
       input.value = "";
       trackGoatCounterEvent("email-capture-success");
