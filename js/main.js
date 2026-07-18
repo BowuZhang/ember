@@ -707,8 +707,13 @@ document.getElementById("email-capture-btn").addEventListener("click", () => {
     })
     .then((data) => {
       if (data.status === "quarantined" && data.url) {
-        window.open(data.url, "_blank", "noopener");
-        statusEl.textContent = "Almost there — we opened a quick verification step in a new tab. Confirm there to finish subscribing.";
+        statusEl.textContent = "Almost there — click to verify you're human, then check your inbox: ";
+        const link = document.createElement("a");
+        link.href = data.url;
+        link.target = "_blank";
+        link.rel = "noopener";
+        link.textContent = "Complete verification →";
+        statusEl.appendChild(link);
       } else {
         statusEl.textContent = "Thanks! Check your inbox shortly.";
       }

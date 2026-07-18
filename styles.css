@@ -210,6 +210,7 @@ h1, h2, h3, h4 {
 
 .detect-status-ok { color: var(--ok); font-weight: 600; }
 .detect-status-error { color: var(--warn); }
+.detect-status a { color: inherit; text-decoration: underline; }
 
 .gated-empty {
   display: flex;
