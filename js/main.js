@@ -327,6 +327,16 @@ function renderStaticContent() {
     (s) => `<div class="info-card"><h4>${s.title}</h4><p>${s.body}</p></div>`
   ).join("");
 
+  document.getElementById("affiliate-partners-grid").innerHTML = AFFILIATE_PARTNERS.map(
+    (p) => `
+      <div class="info-card">
+        <h4>${p.name} <span class="panel-tag">${p.category}</span></h4>
+        <p>${p.description}</p>
+        <a href="${p.url}" target="_blank" rel="noopener sponsored" class="link-btn">Visit ${p.name} →</a>
+      </div>
+    `
+  ).join("");
+
   renderGroupedBarChart(
     document.getElementById("stats-chart-container"),
     RETIREMENT_STATS_BY_AGE,
@@ -536,7 +546,7 @@ document.getElementById("run-montecarlo-btn").addEventListener("click", () => {
     resultEl.className = mc.successRate >= 0.8 ? "status-ok" : "status-warn";
     renderMonteCarloFanChart(document.getElementById("montecarlo-chart-container"), mc.bands, lastInput.retirementAge);
     btn.disabled = false;
-    btn.textContent = "🎲 Run Monte Carlo simulation";
+    btn.textContent = "Run Monte Carlo simulation";
   }, 30);
 });
 
@@ -623,6 +633,32 @@ document.getElementById("copy-link-btn").addEventListener("click", () => {
     .writeText(url)
     .then(() => showPlanIOStatus("Link copied to clipboard.", false))
     .catch(() => showPlanIOStatus("Couldn't copy automatically — select and copy the address bar instead.", true));
+});
+
+document.getElementById("email-capture-btn").addEventListener("click", () => {
+  const input = document.getElementById("email-capture-input");
+  const statusEl = document.getElementById("email-capture-status");
+  const email = input.value.trim();
+  if (!email || !email.includes("@")) {
+    statusEl.textContent = "Enter a valid email address.";
+    statusEl.className = "detect-status detect-status-error";
+    return;
+  }
+  fetch(EMAIL_CAPTURE_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ email, source: "ember-retirement-planner" }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("bad response");
+      statusEl.textContent = "Thanks! Check your inbox shortly.";
+      statusEl.className = "detect-status detect-status-ok";
+      input.value = "";
+    })
+    .catch(() => {
+      statusEl.textContent = "Couldn't submit right now — please try again later.";
+      statusEl.className = "detect-status detect-status-error";
+    });
 });
 
 function parseInitialHash() {

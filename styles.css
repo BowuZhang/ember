@@ -10,13 +10,20 @@
   --border: #dde5e3;
   --warn: #b3541e;
   --ok: #1f7a5c;
+  --font-body: 'Segoe UI', system-ui, sans-serif;
+  --font-heading: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  text-wrap: balance;
 }
 
 .topnav {
@@ -37,7 +44,8 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.15rem;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--accent-dark);
 }
@@ -114,7 +122,13 @@ body {
 }
 
 .menu-card-icon {
-  font-size: 1.8rem;
+  display: inline-flex;
+  color: var(--accent);
+}
+
+.menu-card-icon svg {
+  width: 2rem;
+  height: 2rem;
 }
 
 .menu-card h2 {
