@@ -1,0 +1,196 @@
+/**
+ * Static reference content: FIRE-variant descriptions and post-retirement
+ * guidance. Kept as plain data so main.js just renders it.
+ */
+
+const FIRE_TYPES = [
+  {
+    key: "lean",
+    label: "Lean FIRE",
+    description:
+      "Retiring on a minimal, frugal budget (often under ~$40,000/yr). Requires the smallest FIRE number and the fastest path there, but leaves little room for lifestyle inflation, healthcare surprises, or economic downturns. Works best paired with a genuinely low-cost lifestyle and a low-tax, low-cost-of-living state.",
+  },
+  {
+    key: "fat",
+    label: "Fat FIRE",
+    description:
+      "Retiring with a much larger portfolio to support an above-average, comfortable lifestyle (often $100,000+/yr in spending). Takes longer to reach and usually requires a high income, but provides far more cushion and flexibility, including for travel, dependents, or a higher cost-of-living area.",
+  },
+  {
+    key: "coast",
+    label: "Coast FIRE",
+    description:
+      "You've saved enough that, left alone to compound with zero further contributions, your portfolio will grow to your full FIRE number by traditional retirement age. Once you hit this point you can stop saving for retirement entirely and just cover current living costs — often by working a lower-stress or lower-paying job.",
+  },
+  {
+    key: "barista",
+    label: "Barista FIRE",
+    description:
+      "A middle ground: your portfolio covers most of your expenses, and you work part-time (often for supplemental income and employer health insurance) to cover the rest. Reduces the FIRE number needed versus full retirement while still dramatically increasing freedom and flexibility.",
+  },
+  {
+    key: "traditional",
+    label: "Traditional FIRE",
+    description:
+      "A balanced approach between Lean and Fat FIRE — typical middle-class spending levels in retirement, requiring a moderately sized portfolio without extreme frugality or excess.",
+  },
+];
+
+const FIRE_TYPE_KEY_BY_LABEL = {
+  "Lean FIRE": "lean",
+  "Fat FIRE": "fat",
+  "Coast FIRE": "coast",
+  "Barista FIRE": "barista",
+  "Traditional FIRE": "traditional",
+};
+
+const LIFE_AFTER_CATEGORIES = [
+  {
+    title: "Purpose & work",
+    items: [
+      "Consider part-time, consulting, or an \"encore career\" in a field you find meaningful — stopping work entirely and abruptly can be jarring after decades of structure.",
+      "Volunteering or board work can replace workplace structure and social connection without income pressure.",
+      "Mentoring or teaching, formally or informally, is a common way to keep using decades of expertise.",
+    ],
+  },
+  {
+    title: "Health & benefits",
+    items: [
+      "Enroll in Medicare during your Initial Enrollment Period around age 65 — missing it can mean lasting penalties.",
+      "Decide when to claim Social Security: as early as 62 (reduced), full retirement age (~67), or as late as 70 (increased) — delaying generally raises your monthly benefit.",
+      "If retiring before 65, plan the health-insurance bridge: ACA marketplace plans, COBRA, or a part-time job with benefits.",
+      "Consider long-term care insurance or a dedicated care fund while you're still insurable.",
+    ],
+  },
+  {
+    title: "Family & legacy",
+    items: [
+      "Review or create a will, powers of attorney, and beneficiary designations — these quietly go stale for years.",
+      "If you're still supporting children financially, plan those cash flows explicitly rather than drawing them ad hoc from savings.",
+      "Decide on a gifting or estate strategy if leaving an inheritance is a goal.",
+    ],
+  },
+  {
+    title: "Lifestyle & adventure",
+    items: [
+      "Big travel or relocation plans are often easiest in the first few active years of retirement.",
+      "Downsizing or relocating to a lower-tax, lower-cost state (see the comparison above) can meaningfully stretch your portfolio.",
+      "Revisit hobbies or interests that were sidelined during your career — many retirees underestimate how much unstructured time they'll suddenly have.",
+    ],
+  },
+];
+
+function buildLifeAfterIntro(input, childrenAges) {
+  if (!childrenAges || childrenAges.length === 0) {
+    return "The transition into retirement is as much about time and purpose as it is about money. A few areas worth planning deliberately:";
+  }
+  const yearsToRetirement = input.retirementAge - input.currentAge;
+  const stillDependent = childrenAges.some((age) => age + yearsToRetirement < 18);
+  if (stillDependent) {
+    return "With children still at home when you retire, this next chapter will likely blend continued family support with your own plans. A few areas worth planning deliberately:";
+  }
+  return "With your kids grown and independent by the time you retire, this next chapter is squarely your own. A few areas worth planning deliberately:";
+}
+
+/**
+ * Household net worth and retirement-account balances by age bracket,
+ * from the Federal Reserve's 2022 Survey of Consumer Finances (released
+ * Oct 2023 — the most recent wave available). Net worth is the median
+ * across ALL households in the bracket; retirement-account balance is
+ * the median among the roughly 55–65% of households that have one
+ * (most households without an account would otherwise pull that median
+ * toward zero and be misleading).
+ */
+const RETIREMENT_STATS_BY_AGE = [
+  { label: "Under 35", netWorth: 39000, retirementBalance: 18880 },
+  { label: "35–44", netWorth: 135000, retirementBalance: 45000 },
+  { label: "45–54", netWorth: 247000, retirementBalance: 115000 },
+  { label: "55–64", netWorth: 364000, retirementBalance: 185000 },
+  { label: "65–74", netWorth: 410000, retirementBalance: 200000 },
+  { label: "75+", netWorth: 335000, retirementBalance: 130000 },
+];
+
+/**
+ * Household net worth needed to reach each percentile nationally, from
+ * analysis of the Federal Reserve's 2022 Survey of Consumer Finances
+ * (DQYDJ's percentile breakdown of the same SCF data). Estimates at the
+ * extreme end (top 0.1–0.5%) carry much wider error bars — the SCF
+ * intentionally oversamples wealthy households but very small samples at
+ * the top mean these figures should be read as rough orders of magnitude.
+ */
+const NET_WORTH_PERCENTILES = [
+  { label: "Top 0.1%", netWorth: 61800000 },
+  { label: "Top 0.5%", netWorth: 20100000 },
+  { label: "Top 1%", netWorth: 13700000 },
+  { label: "Top 2%", netWorth: 5500000 },
+  { label: "Top 5%", netWorth: 3800000 },
+  { label: "Top 10%", netWorth: 1920000 },
+  { label: "Median (top 50%)", netWorth: 192000 },
+];
+
+/**
+ * 2024 US Census household income percentile thresholds, used only as a
+ * reference point for comparing a retirement portfolio's safe-withdrawal
+ * income against how working households' incomes are distributed.
+ */
+const HOUSEHOLD_INCOME_PERCENTILES = [
+  { label: "Median household income", income: 80020 },
+  { label: "Top 10% threshold", income: 234769 },
+  { label: "Top 5% threshold", income: 315504 },
+  { label: "Top 1% threshold", income: 631500 },
+];
+
+function incomePercentileContext(annualIncome) {
+  const p = HOUSEHOLD_INCOME_PERCENTILES;
+  if (annualIncome >= p[3].income) return "above the top 1% household income threshold";
+  if (annualIncome >= p[2].income) return "between the top 5% and top 1% household income thresholds";
+  if (annualIncome >= p[1].income) return "between the top 10% and top 5% household income thresholds";
+  if (annualIncome >= p[0].income) return "above median household income, below the top 10% threshold";
+  return "below median household income";
+}
+
+/**
+ * Portfolio size translated into annual income at a 4% safe withdrawal
+ * rate, compared against 2024 household income percentiles. Financial
+ * framing only — lifestyle/activity content is out of scope here (see
+ * the planned Retirement Life section).
+ */
+const PORTFOLIO_TIERS = [1000000, 3000000, 5000000, 10000000].map((portfolio) => {
+  const annualIncome = portfolio * 0.04;
+  return { portfolio, annualIncome, context: incomePercentileContext(annualIncome) };
+});
+
+const TAX_STRATEGIES = [
+  {
+    title: "401(k) / 403(b)",
+    body: "Pre-tax salary deferral lowers your taxable income now and grows tax-deferred until withdrawal. 2025 employee limit: $23,500 ($31,000 if 50+, higher still for ages 60–63 under SECURE 2.0). An employer match is free money — contribute at least enough to capture all of it.",
+  },
+  {
+    title: "Traditional vs. Roth IRA",
+    body: "Traditional IRA contributions may be deductible now and are taxed on withdrawal; Roth IRA contributions are after-tax but grow and withdraw tax-free. 2025 limit: $7,000 ($8,000 if 50+), with Roth eligibility phased out at higher incomes.",
+  },
+  {
+    title: "Backdoor Roth IRA",
+    body: "High earners above the Roth income limit can contribute to a Traditional IRA (nondeductible) and convert it to Roth soon after — mind the pro-rata rule if you hold other pre-tax IRA balances, which can make the conversion partly taxable.",
+  },
+  {
+    title: "HSA (Health Savings Account)",
+    body: "The only triple-tax-advantaged account: pre-tax contributions, tax-free growth, and tax-free withdrawals for qualified medical expenses. After 65, non-medical withdrawals are taxed like a Traditional IRA with no penalty. 2025 limit: $4,300 individual / $8,550 family.",
+  },
+  {
+    title: "Mega backdoor Roth",
+    body: "Some 401(k) plans allow after-tax contributions beyond the standard employee limit, which can then be converted to Roth — potentially tens of thousands more in tax-advantaged room per year, if your specific plan allows it.",
+  },
+  {
+    title: "Tax-loss harvesting",
+    body: "Selling taxable-account investments at a loss to offset capital gains (and up to $3,000 of ordinary income per year) can reduce your tax bill without changing your overall allocation — just mind the wash-sale rule when re-buying.",
+  },
+  {
+    title: "Qualified Charitable Distributions",
+    body: "At 70½+, you can direct up to roughly $105,000/yr (2024 figure, indexed annually) from an IRA straight to charity. It counts toward your Required Minimum Distribution but isn't included in your taxable income.",
+  },
+  {
+    title: "Asset location",
+    body: "Placing tax-inefficient investments (bonds, REITs) in tax-deferred or Roth accounts, and tax-efficient ones (broad index funds) in taxable accounts, can reduce the tax drag on your portfolio independent of your overall asset allocation.",
+  },
+];
