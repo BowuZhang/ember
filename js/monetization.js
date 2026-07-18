@@ -33,6 +33,4 @@ const AFFILIATE_PARTNERS = [
   },
 ];
 
-// TODO: replace with your real form endpoint (e.g. https://formspree.io/f/xxxxxxx)
-// once you've created one — until then, submissions will fail gracefully.
-const EMAIL_CAPTURE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+const EMAIL_CAPTURE_ENDPOINT = "https://formspree.io/f/xnjedbad";
