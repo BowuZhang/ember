@@ -368,6 +368,31 @@ main {
   gap: 1rem 1.25rem;
 }
 
+.age-pair {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.age-pair label {
+  flex: 0 0 auto;
+}
+
+.age-box {
+  width: 6rem;
+}
+
+/* Give the pair a second grid track once the grid has room for one, so
+   "Retirement age" never wraps below "Current age" — gated behind a
+   min-width so it never forces an implicit column on a single-column
+   (mobile) grid, which would break the whole form's layout. */
+@media (min-width: 560px) {
+  .age-pair {
+    grid-column: span 2;
+    flex-wrap: nowrap;
+  }
+}
+
 label {
   display: flex;
   flex-direction: column;

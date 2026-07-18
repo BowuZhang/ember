@@ -85,19 +85,18 @@
         <div class="panel-body" id="panel-numbers-body">
           <form id="planner-form">
             <div class="form-grid">
-              <label>
-                <span class="label-row">Current age <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
-                <input type="number" id="current-age" class="plan-input" min="18" max="99" placeholder="e.g. 35" required>
-                <span class="input-tip" hidden>Your age today — the starting point for the whole projection.</span>
-              </label>
-              <label class="slider-label">
-                <span class="label-row">Target retirement age <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
-                <div class="slider-row">
-                  <input type="range" id="retirement-age" class="plan-input" data-format="age" min="19" max="100" step="1" value="65">
-                  <output for="retirement-age" id="retirement-age-output">Age 65</output>
-                </div>
-                <span class="input-tip" hidden>The age you're aiming to stop full-time work. Drag to see how it changes your FIRE number and timeline.</span>
-              </label>
+              <div class="age-pair">
+                <label>
+                  <span class="label-row">Current age <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
+                  <input type="number" id="current-age" class="plan-input age-box" min="18" max="99" placeholder="e.g. 35" required>
+                  <span class="input-tip" hidden>Your age today — the starting point for the whole projection.</span>
+                </label>
+                <label>
+                  <span class="label-row">Retirement age <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
+                  <input type="number" id="retirement-age" class="plan-input age-box" min="19" max="100" placeholder="e.g. 65" required>
+                  <span class="input-tip" hidden>The age you're aiming to stop full-time work — changes your FIRE number and timeline.</span>
+                </label>
+              </div>
               <label>
                 <span class="label-row">Current portfolio value <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
                 <input type="text" inputmode="numeric" id="current-portfolio" class="plan-input currency-input" placeholder="e.g. $150,000" required>
