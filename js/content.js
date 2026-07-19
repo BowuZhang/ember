@@ -80,17 +80,69 @@ const LIFE_AFTER_CATEGORIES = [
   },
 ];
 
-function buildLifeAfterIntro(input, childrenAges) {
-  if (!childrenAges || childrenAges.length === 0) {
-    return "The transition into retirement is as much about time and purpose as it is about money. A few areas worth planning deliberately:";
-  }
-  const yearsToRetirement = input.retirementAge - input.currentAge;
-  const stillDependent = childrenAges.some((age) => age + yearsToRetirement < 18);
-  if (stillDependent) {
-    return "With children still at home when you retire, this next chapter will likely blend continued family support with your own plans. A few areas worth planning deliberately:";
-  }
-  return "With your kids grown and independent by the time you retire, this next chapter is squarely your own. A few areas worth planning deliberately:";
+/** Spending-level tiers used to calibrate life-after-retirement suggestions — $50k/yr and $200k/yr call for very different framing. */
+const LIFE_AFTER_SPENDING_TIERS = [
+  {
+    max: 40000,
+    label: "lean",
+    note: "free and low-cost options will do most of the work — library programs, national and state parks, community-college classes, and volunteering all add up to a rich life without straining the budget",
+  },
+  {
+    max: 80000,
+    label: "moderate",
+    note: "there's real room for regular hobbies, occasional travel, and the occasional paid class or gear upgrade without much second-guessing",
+  },
+  {
+    max: 150000,
+    label: "comfortable",
+    note: "premium versions of most pursuits — real equipment, guided trips, private instruction — are realistically within reach",
+  },
+  {
+    max: Infinity,
+    label: "abundant",
+    note: "budget is rarely the limiting factor here — time and energy become the real constraints, not money",
+  },
+];
+
+function lifeAfterSpendingTier(annualExpenses) {
+  return LIFE_AFTER_SPENDING_TIERS.find((t) => annualExpenses <= t.max) || LIFE_AFTER_SPENDING_TIERS[LIFE_AFTER_SPENDING_TIERS.length - 1];
 }
+
+function buildLifeAfterIntro(input, childrenAges) {
+  const tier = lifeAfterSpendingTier(input.annualExpensesToday);
+  let kidsPart = "";
+  if (childrenAges && childrenAges.length > 0) {
+    const yearsToRetirement = input.retirementAge - input.currentAge;
+    const stillDependent = childrenAges.some((age) => age + yearsToRetirement < 18);
+    kidsPart = stillDependent
+      ? " With children still at home when you retire, this next chapter will likely blend continued family support with your own plans."
+      : " With your kids grown and independent by the time you retire, this next chapter is squarely your own.";
+  }
+  const article = /^[aeiou]/i.test(tier.label) ? "an" : "a";
+  return `Money is only half the plan.${kidsPart} At ${article} ${tier.label} ${currency(input.annualExpensesToday)}/year spending level, ${tier.note}. A few areas worth planning deliberately:`;
+}
+
+/** A few stable, well-known starting points per life-after-retirement category — not exhaustive, just a place to start digging. */
+const LIFE_AFTER_RESOURCES = {
+  "Purpose & work": [
+    { name: "SCORE — free small-business mentoring", url: "https://www.score.org" },
+    { name: "VolunteerMatch", url: "https://www.volunteermatch.org" },
+    { name: "AARP — working & volunteering in retirement", url: "https://www.aarp.org" },
+  ],
+  "Health & benefits": [
+    { name: "Medicare.gov", url: "https://www.medicare.gov" },
+    { name: "Social Security Administration", url: "https://www.ssa.gov" },
+    { name: "HealthCare.gov (ACA marketplace)", url: "https://www.healthcare.gov" },
+  ],
+  "Family & legacy": [
+    { name: "National Association of Estate Planners & Councils", url: "https://www.naepc.org" },
+    { name: "IRS — retirement & estate basics", url: "https://www.irs.gov" },
+  ],
+  "Lifestyle & adventure": [
+    { name: "National Park Service", url: "https://www.nps.gov" },
+    { name: "AARP — livable communities & relocation", url: "https://www.aarp.org" },
+  ],
+};
 
 /**
  * Household net worth and retirement-account balances by age bracket,

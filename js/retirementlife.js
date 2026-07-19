@@ -41,6 +41,13 @@ const RETIREMENT_PERSONALITIES = [
       "Hot air ballooning or skydiving, at least once, for the story",
       "Photography trips built entirely around golden hour",
     ],
+    budgetRange: { low: 8000, high: 25000 },
+    gettingStarted: [
+      { text: "Scuba: a PADI or NAUI Open Water certification takes 3–4 days and runs roughly $400–600 — most local dive shops offer it.", url: "https://www.padi.com" },
+      { text: "Sailing: a US Sailing basic keelboat course is a common first step, usually a single weekend.", url: "https://www.ussailing.org" },
+      { text: "RVing: many RV clubs and dealers run beginner caravanning workshops before you buy anything." },
+      { text: "Long-distance hiking: outdoor retailers' gear and trip-planning clinics are a low-stakes way to prep before a big one." },
+    ],
   },
   {
     key: "creator",
@@ -65,6 +72,13 @@ const RETIREMENT_PERSONALITIES = [
       "Starting a podcast or YouTube channel",
       "Stained glass or mosaic work",
       "Calligraphy and hand-lettering",
+    ],
+    budgetRange: { low: 1500, high: 6000 },
+    gettingStarted: [
+      { text: "Most community colleges have a low-cost continuing-ed catalog — pottery, woodworking, and jewelry classes often run $50–200." },
+      { text: "Local makerspaces offer access to kilns, laser cutters, and wood shops without buying your own equipment." },
+      { text: "For writing, a local library writing group is a free way to test the waters before a paid workshop." },
+      { text: "Community music schools run adult-beginner classes with no audition required." },
     ],
   },
   {
@@ -91,6 +105,12 @@ const RETIREMENT_PERSONALITIES = [
       "Starting a neighborhood association",
       "Running a meal train for new parents or the newly widowed",
     ],
+    budgetRange: { low: 2000, high: 7000 },
+    gettingStarted: [
+      { text: "No group exists yet? Starting one on Meetup takes minutes.", url: "https://www.meetup.com" },
+      { text: "VolunteerMatch and a local Rotary, Lions, or Elks chapter are easy on-ramps to a built-in social calendar.", url: "https://www.volunteermatch.org" },
+      { text: "Ballroom and line-dancing studios almost always offer a free or cheap intro class before you commit." },
+    ],
   },
   {
     key: "sage",
@@ -115,6 +135,12 @@ const RETIREMENT_PERSONALITIES = [
       "Amateur astronomy and stargazing",
       "Birdwatching with a proper field journal",
       "Learning to code, purely for the puzzle of it",
+    ],
+    budgetRange: { low: 500, high: 3000 },
+    gettingStarted: [
+      { text: "Osher Lifelong Learning Institutes (OLLI) run through 125+ universities nationwide — no degree required, low annual fee. Search \"OLLI\" plus your nearest university." },
+      { text: "Coursera and edX let you audit most courses free; pay only if you want a certificate.", url: "https://www.coursera.org" },
+      { text: "Many public libraries run free lecture series, language classes, and museum-pass programs — check yours first." },
     ],
   },
   {
@@ -141,6 +167,12 @@ const RETIREMENT_PERSONALITIES = [
       "Flower arranging and a cutting garden",
       "Cheese-making",
     ],
+    budgetRange: { low: 1000, high: 5000 },
+    gettingStarted: [
+      { text: "Master Gardener certification runs through your county's Cooperative Extension office — a free/low-cost, university-affiliated network in nearly every county." },
+      { text: "The same extension offices often teach canning, beekeeping, and food-safety basics, frequently for free." },
+      { text: "Community college culinary continuing-ed classes are a low-stakes way to level up cooking without a full program." },
+    ],
   },
   {
     key: "competitor",
@@ -165,6 +197,12 @@ const RETIREMENT_PERSONALITIES = [
       "Triathlon training",
       "Rock climbing at the local gym",
       "Table tennis clubs — more competitive than you'd think",
+    ],
+    budgetRange: { low: 2000, high: 8000 },
+    gettingStarted: [
+      { text: "USA Pickleball's site lists local leagues and beginner clinics by zip code.", url: "https://www.usapickleball.org" },
+      { text: "The National Senior Games (biennial, ages 50+) has state qualifying events most years — a fun target to train toward.", url: "https://www.nsga.com" },
+      { text: "Municipal parks & rec departments run inexpensive adult sports leagues — usually cheaper than private clubs, a good first step." },
     ],
   },
   {
@@ -191,6 +229,12 @@ const RETIREMENT_PERSONALITIES = [
       "Prison literacy or re-entry programs",
       "Volunteer mediation or conflict resolution",
     ],
+    budgetRange: { low: 500, high: 3000 },
+    gettingStarted: [
+      { text: "VolunteerMatch lists vetted opportunities by cause and time commitment.", url: "https://www.volunteermatch.org" },
+      { text: "BoardSource is a good starting point if nonprofit board service interests you.", url: "https://www.boardsource.org" },
+      { text: "Meals on Wheels America has a chapter locator if meal delivery appeals.", url: "https://www.mealsonwheelsamerica.org" },
+    ],
   },
   {
     key: "entrepreneur",
@@ -215,6 +259,12 @@ const RETIREMENT_PERSONALITIES = [
       "Paid public speaking or workshops",
       "Self-publishing books",
       "Running a food truck or pop-up",
+    ],
+    budgetRange: { low: 3000, high: 20000 },
+    gettingStarted: [
+      { text: "SCORE offers free one-on-one mentoring backed by the SBA — a strong first stop before spending anything.", url: "https://www.score.org" },
+      { text: "The SBA's Learning Center has free courses on licensing, business structure, and basic finance.", url: "https://www.sba.gov" },
+      { text: "Licensing requirements vary a lot by state and industry — start with your Secretary of State's business registration site." },
     ],
   },
 ];

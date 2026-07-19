@@ -185,6 +185,48 @@ function renderTaxBreakdownBar(containerEl, breakdown) {
   `;
 }
 
+/**
+ * A fun, personal-finance-aware gauge: shows a retirement personality's
+ * rough incremental lifestyle budget as a percentage of the user's actual
+ * planned annual spending, with a colored fit zone (comfortable/moderate/
+ * stretch) and a verdict line. Falls back to a CTA if no calculator data
+ * exists yet.
+ */
+function renderBudgetFitGauge(containerEl, budgetRange, annualSpending) {
+  if (!annualSpending) {
+    containerEl.innerHTML = `<p class="budget-fit-cta">Fill in the calculator to see how this lifestyle fits your own spending plan.</p>`;
+    return;
+  }
+  const lowPct = (budgetRange.low / annualSpending) * 100;
+  const highPct = (budgetRange.high / annualSpending) * 100;
+  const midPct = (lowPct + highPct) / 2;
+  const barLow = Math.min(100, lowPct);
+  const barHigh = Math.min(100, highPct);
+
+  let verdictClass, verdictText;
+  if (midPct < 15) {
+    verdictClass = "budget-fit-easy";
+    verdictText = `Comfortably absorbed by your ${formatCurrencyShort(annualSpending)}/yr plan.`;
+  } else if (midPct < 35) {
+    verdictClass = "budget-fit-moderate";
+    verdictText = `A meaningful chunk of your ${formatCurrencyShort(annualSpending)}/yr plan — worth budgeting for explicitly.`;
+  } else {
+    verdictClass = "budget-fit-stretch";
+    verdictText = `A real stretch at your ${formatCurrencyShort(annualSpending)}/yr spending level — a leaner version, or revisiting your numbers, may help.`;
+  }
+
+  containerEl.innerHTML = `
+    <p class="budget-fit-label">Rough extra budget for this lifestyle: <strong>${formatCurrencyShort(budgetRange.low)}–${formatCurrencyShort(budgetRange.high)}/yr</strong> — about ${Math.round(lowPct)}–${Math.round(highPct)}% on top of your ${formatCurrencyShort(annualSpending)}/yr plan.</p>
+    <div class="budget-fit-track" role="img" aria-label="This lifestyle's estimated cost as a share of your planned annual spending">
+      <div class="budget-fit-zone budget-fit-zone-easy"></div>
+      <div class="budget-fit-zone budget-fit-zone-moderate"></div>
+      <div class="budget-fit-zone budget-fit-zone-stretch"></div>
+      <div class="budget-fit-range" style="left:${barLow}%; width:${Math.max(2, barHigh - barLow)}%"></div>
+    </div>
+    <p class="budget-fit-verdict ${verdictClass}">${verdictText}</p>
+  `;
+}
+
 /** Multi-line comparison of total portfolio balance under different withdrawal-order strategies. */
 function renderStrategyComparisonChart(containerEl, strategyResults, retirementAge) {
   const width = Math.max(280, Math.min(720, containerEl.clientWidth || 720));

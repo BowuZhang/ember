@@ -348,6 +348,20 @@ function render(input) {
   renderStatsChart();
   renderTaxPersonalization();
 
+  // --- Refresh any already-rendered budget-fit gauges on Retirement Life ---
+  if (!document.getElementById("quiz-result-container").hidden) {
+    const maxScore = Math.max(...Object.values(quizScores));
+    const winners = QUIZ_TYPE_ORDER.filter((t) => quizScores[t] === maxScore);
+    winners.forEach((key) => {
+      const el = document.getElementById(`budget-fit-${key}`);
+      if (el) renderBudgetFitGauge(el, findPersonality(key).budgetRange, input.annualExpensesToday);
+    });
+  }
+  const activeBudgetFitEl = document.getElementById("personality-budget-fit");
+  if (activeBudgetFitEl) {
+    renderBudgetFitGauge(activeBudgetFitEl, findPersonality(activePersonalityKey).budgetRange, input.annualExpensesToday);
+  }
+
   saveLastPlan();
 }
 
@@ -390,14 +404,25 @@ function renderTaxPersonalization() {
 }
 
 function renderStaticContent() {
-  document.getElementById("life-after-categories").innerHTML = LIFE_AFTER_CATEGORIES.map(
-    (cat) => `
+  document.getElementById("life-after-categories").innerHTML = LIFE_AFTER_CATEGORIES.map((cat) => {
+    const resources = LIFE_AFTER_RESOURCES[cat.title] || [];
+    const resourcesHtml =
+      resources.length === 0
+        ? ""
+        : `
+          <p class="resource-heading">Go deeper</p>
+          <ul class="resource-list">
+            ${resources.map((r) => `<li><a href="${r.url}" target="_blank" rel="noopener">${r.name} ↗</a></li>`).join("")}
+          </ul>
+        `;
+    return `
       <div class="info-card">
         <h4>${cat.title}</h4>
         <ul>${cat.items.map((item) => `<li>${item}</li>`).join("")}</ul>
+        ${resourcesHtml}
       </div>
-    `
-  ).join("");
+    `;
+  }).join("");
 
   document.getElementById("tax-strategies-grid").innerHTML = TAX_STRATEGIES.map(
     (s) => `<div class="info-card"><h4>${s.title}</h4><p>${s.body}</p></div>`
@@ -994,6 +1019,8 @@ function buildPersonalityResultCard(key) {
       <h3>You're ${p.label}!</h3>
       <p class="personality-tagline">"${p.tagline}"</p>
       <p>${p.description}</p>
+      <p class="budget-fit-heading">Does this fit your budget?</p>
+      <div id="budget-fit-${p.key}" class="budget-fit"></div>
     </div>
   `;
 }
@@ -1023,6 +1050,10 @@ function showQuizResult(restored) {
     selectPersonalityTab(winners[0]);
     document.getElementById("personality-detail").scrollIntoView({ behavior: "smooth", block: "start" });
   });
+  winners.forEach((key) => {
+    const p = findPersonality(key);
+    renderBudgetFitGauge(document.getElementById(`budget-fit-${key}`), p.budgetRange, lastInput ? lastInput.annualExpensesToday : null);
+  });
 }
 
 let activePersonalityKey = "adventurer";
@@ -1045,6 +1076,12 @@ function renderPersonalityTabs(activeKey) {
 
 function renderPersonalityDetail(key) {
   const p = findPersonality(key);
+  const gettingStartedHtml = (p.gettingStarted || [])
+    .map(
+      (tip) =>
+        `<li>${tip.url ? `<a href="${tip.url}" target="_blank" rel="noopener">${tip.text} ↗</a>` : tip.text}</li>`
+    )
+    .join("");
   document.getElementById("personality-detail").innerHTML = `
     <div class="personality-detail-card" style="--tab-color:${p.color}">
       <div class="personality-detail-header">
@@ -1057,8 +1094,13 @@ function renderPersonalityDetail(key) {
       <p>${p.description}</p>
       <h4>Activities to steal</h4>
       <ul class="activity-list">${p.activities.map((a) => `<li>${a}</li>`).join("")}</ul>
+      <h4>Getting started</h4>
+      <ul class="getting-started-list">${gettingStartedHtml}</ul>
+      <h4>Does this fit your budget?</h4>
+      <div id="personality-budget-fit" class="budget-fit"></div>
     </div>
   `;
+  renderBudgetFitGauge(document.getElementById("personality-budget-fit"), p.budgetRange, lastInput ? lastInput.annualExpensesToday : null);
 }
 
 function selectPersonalityTab(key) {
