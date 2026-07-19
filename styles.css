@@ -406,6 +406,32 @@ main {
   font-size: 0.92rem;
 }
 
+.strategy-block {
+  background: var(--accent-soft, rgba(31, 122, 92, 0.08));
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.strategy-block:last-of-type {
+  margin-bottom: 0;
+}
+
+.strategy-block h4 {
+  color: var(--accent-dark);
+  margin-bottom: 0.5rem;
+}
+
+.strategy-block p {
+  font-size: 0.9rem;
+  margin-bottom: 0.6rem;
+}
+
+.strategy-block p:last-child {
+  margin-bottom: 0;
+}
+
 .link-btn {
   background: none;
   border: none;

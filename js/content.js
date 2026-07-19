@@ -268,20 +268,55 @@ function describeNetWorthRank(netWorth) {
   return "is below the national median";
 }
 
-/** A short, state-aware callout for the Tax Savings Strategies page, using the calculator's saved state. */
-function describeTaxPersonalization(input) {
+const PENALTY_FREE_ACCOUNT_AGE = 59.5;
+const RMD_START_AGE_REF = 73;
+
+/**
+ * Personalized Roth-conversion guidance built from the calculator's own
+ * retirement age and filing status — the gap between retiring and 59½ (or,
+ * absent that gap, the runway before RMDs/Social Security) is framed as a
+ * conversion window, with a rule-of-thumb bracket-filling target reusing
+ * the same federal bracket table the tax deep-dive uses.
+ */
+function buildRothConversionStrategy(input) {
+  const gapYears = PENALTY_FREE_ACCOUNT_AGE - input.retirementAge;
+  const bracket12Top = FEDERAL_BRACKETS[input.filingStatus][1].upTo;
+  const suggestedCeiling = STANDARD_DEDUCTION[input.filingStatus] + bracket12Top;
+  const filingLabel = input.filingStatus === "married" ? "married filing jointly" : "single filers";
+
+  const windowText =
+    gapYears > 0
+      ? `Retiring at ${input.retirementAge} leaves roughly ${gapYears.toFixed(1)} years (ages ${input.retirementAge}–59½) before you can tap Traditional 401(k)/IRA funds penalty-free. That gap is one of the best windows you'll get for Roth conversions: with no salary and no Traditional withdrawals yet, taxable income is often unusually low, so converting fills up cheap tax brackets that would otherwise go unused.`
+      : `Retiring at ${input.retirementAge} means you're already past the 59½ penalty-free access age, so there's no low-income "gap" before then — but the years between retirement and age ${RMD_START_AGE_REF} (when RMDs begin) or before you claim Social Security are still worth targeting for conversions, since income tends to be lower and more controllable before both of those kick in.`;
+
+  const ladderNote =
+    gapYears > 0
+      ? `If you plan to actually spend converted funds before 59½, remember each conversion needs 5 tax years to season before its principal can come out penalty-free — a "Roth conversion ladder" means converting every year, starting at least 5 years before you'll need that money. The Rule of 55 (for a 401(k) left with your last employer) and 72(t)/SEPP distributions are the other common ways to access retirement funds early without the ladder.`
+      : `Even without an early-access gap, converting steadily rather than all at once still helps — a big single-year conversion can push you into a much higher bracket than spreading the same amount over several years.`;
+
+  const ceilingNote = `A common rule of thumb: convert enough each year to fill up to the top of the 12% federal bracket without going higher — for ${filingLabel}, that's roughly ${currency(suggestedCeiling)} of total taxable income (standard deduction plus bracket room) in today's dollars. Other income that year changes this number — treat it as a starting point, not a target to hit exactly.`;
+
+  return `
+    <h4>Your Roth conversion window</h4>
+    <p>${windowText}</p>
+    <p>${ladderNote}</p>
+    <p>${ceilingNote}</p>
+  `;
+}
+
+/** State-aware Roth-conversion and withdrawal tax guidance, using the calculator's saved state. */
+function buildStateTaxStrategy(input) {
   const stateInfo = STATE_DATA[input.stateCode];
   if (!stateInfo) return "";
-  const rateText =
+  const rateNote =
     stateInfo.effectiveRetirementTaxRate === 0
-      ? `${stateInfo.name} doesn't tax retirement withdrawals`
-      : `${stateInfo.name} taxes retirement withdrawals at roughly ${(stateInfo.effectiveRetirementTaxRate * 100).toFixed(1)}% effectively`;
-  const ssNote = stateInfo.taxesSocialSecurity
-    ? " and also taxes Social Security benefits"
-    : "";
-  const focus =
-    input.currentAge >= 55
-      ? "Qualified Charitable Distributions and asset location are especially worth a look as you approach withdrawals."
-      : "Maxing tax-advantaged space (HSA, mega backdoor Roth, tax-loss harvesting) has the most runway to compound before you retire.";
-  return `Based on your calculator inputs: ${rateText}${ssNote}. ${focus}`;
+      ? `${stateInfo.name} doesn't tax retirement withdrawals — Roth conversions done while you're a resident here cost federal tax only, which is about as favorable as conversion timing gets.`
+      : `${stateInfo.name} taxes retirement withdrawals at roughly ${(stateInfo.effectiveRetirementTaxRate * 100).toFixed(1)}% effectively. Roth conversions are generally taxed as ordinary income by both the IRS and most states in the year you convert — the same rate that applies to your regular income, not necessarily any special lower rate a state reserves for retirement withdrawals after a certain age.`;
+  const ssNote = stateInfo.taxesSocialSecurity ? ` ${stateInfo.name} also taxes Social Security benefits, which is worth factoring in once you start claiming.` : "";
+  const relocationNote = `If relocating to a lower- or no-tax state in retirement is on the table, timing large conversions to happen after you've established residency there — not before — can meaningfully cut the state tax bill on the conversion. State tax residency is usually based on where you physically live and intend to stay, not just a mailing address, so confirm the specifics with a professional before a big conversion year.`;
+  return `
+    <h4>State tax considerations</h4>
+    <p>${rateNote}${ssNote}</p>
+    <p>${relocationNote}</p>
+  `;
 }

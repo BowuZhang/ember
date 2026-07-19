@@ -391,15 +391,19 @@ function renderStatsChart() {
   );
 }
 
-/** Fills in the state-aware personalization callout on the Tax Savings Strategies page. */
+/** Fills in the Roth-conversion and state-tax strategy panel on the Tax Savings Strategies page. */
 function renderTaxPersonalization() {
-  const calloutEl = document.getElementById("tax-personal-callout");
-  if (!calloutEl) return;
+  const cta = document.getElementById("personalized-tax-cta");
+  const content = document.getElementById("personalized-tax-content");
+  if (!cta || !content) return;
   if (lastInput) {
-    calloutEl.textContent = describeTaxPersonalization(lastInput);
-    calloutEl.hidden = false;
+    document.getElementById("roth-conversion-strategy").innerHTML = buildRothConversionStrategy(lastInput);
+    document.getElementById("state-tax-strategy").innerHTML = buildStateTaxStrategy(lastInput);
+    cta.hidden = true;
+    content.hidden = false;
   } else {
-    calloutEl.hidden = true;
+    cta.hidden = false;
+    content.hidden = true;
   }
 }
 
