@@ -1246,7 +1246,9 @@ const LIFEPLAN_STORAGE_KEY = "ember-lifeplan";
 function saveLifePlanData() {
   try {
     const data = {};
-    document.querySelectorAll(".lifeplan-input").forEach((el) => (data[el.id] = el.value));
+    document.querySelectorAll(".lifeplan-input").forEach((el) => {
+      data[el.id] = el.type === "checkbox" ? el.checked : el.value;
+    });
     localStorage.setItem(LIFEPLAN_STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
     // localStorage unavailable — fail silently
@@ -1260,7 +1262,9 @@ function loadLifePlanData() {
     const data = JSON.parse(raw);
     Object.entries(data).forEach(([id, value]) => {
       const el = document.getElementById(id);
-      if (el) el.value = value;
+      if (!el) return;
+      if (el.type === "checkbox") el.checked = value === true;
+      else el.value = value;
     });
     document.querySelectorAll(".lifeplan-input.currency-input").forEach((el) => el.dispatchEvent(new Event("input")));
   } catch (e) {
@@ -1274,10 +1278,14 @@ function clearLifePlanData() {
   } catch (e) {
     // ignore
   }
-  document.querySelectorAll(".lifeplan-input").forEach((el) => (el.value = ""));
+  document.querySelectorAll(".lifeplan-input").forEach((el) => {
+    if (el.type === "checkbox") el.checked = false;
+    else el.value = "";
+  });
   recomputeNetWorth();
   recomputeEmergencyFund();
   recomputeDebtPayoff();
+  updateEstateChecklistProgress();
 }
 
 function recomputeNetWorth() {
@@ -1388,6 +1396,41 @@ function recomputeDebtPayoff() {
   `;
 }
 
+/** Renders the estate-planning checklist items (content.js data) as checkboxes, wiring each one individually since they're injected after the generic .lifeplan-input listener setup below runs. */
+function renderEstateChecklist() {
+  const el = document.getElementById("estate-checklist");
+  el.innerHTML = ESTATE_CHECKLIST_ITEMS.map(
+    (item, i) => `
+      <label class="checklist-item" id="estate-item-${i}">
+        <input type="checkbox" class="lifeplan-input" id="estate-check-${i}">
+        <div><h4>${item.title}</h4><p>${item.body}</p></div>
+      </label>
+    `
+  ).join("");
+  el.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.addEventListener("input", () => {
+      updateEstateChecklistProgress();
+      saveLifePlanData();
+    });
+  });
+
+  document.getElementById("estate-tax-note").innerHTML = `
+    <h4>Does estate tax apply to you?</h4>
+    <p>The federal estate tax exemption is $15 million per person ($30 million for a married couple) in 2026 — very few estates owe federal estate tax. However, about a dozen states levy their own estate or inheritance tax with thresholds far lower than the federal one, sometimes as low as $1-2 million. Worth checking your specific state's rules regardless of your net worth.</p>
+  `;
+}
+
+function updateEstateChecklistProgress() {
+  const boxes = ESTATE_CHECKLIST_ITEMS.map((_, i) => document.getElementById(`estate-check-${i}`));
+  const completed = boxes.filter((cb) => cb.checked).length;
+  document.getElementById("estate-progress").textContent = `${completed} of ${boxes.length} completed`;
+  boxes.forEach((cb, i) => {
+    document.getElementById(`estate-item-${i}`).classList.toggle("checked", cb.checked);
+  });
+}
+
+renderEstateChecklist();
+
 document.querySelectorAll(".lifeplan-input").forEach((el) => {
   el.addEventListener("input", () => {
     recomputeNetWorth();
@@ -1401,6 +1444,7 @@ loadLifePlanData();
 recomputeNetWorth();
 recomputeEmergencyFund();
 recomputeDebtPayoff();
+updateEstateChecklistProgress();
 
 /** One-time convenience prefill from the calculator's own portfolio value — only if the field is still untouched. */
 function prefillNetWorthFromCalculator() {

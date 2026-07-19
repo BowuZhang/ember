@@ -421,3 +421,42 @@ function buildLTCGuidance(input, ltcPlan, fireNumber) {
 
   return `About 70% of people who reach 65 develop a severe long-term care need before they die, and 48% receive some paid care, per HHS's lifetime-risk research — it's a mainstream risk, not an edge case. Medicare does not cover long-term custodial care (help with daily activities like bathing or dressing) beyond a short post-hospital stay, which is the most common misconception about paying for it. At the ${ltcPlan.monthlyRegionalCost ? currency(ltcPlan.monthlyRegionalCost) : ""}/mo estimate used above, your assumed care scenario would cost roughly ${currency(ltcPlan.totalCost)} in today's dollars.${scaleNote} ${timingNote}`;
 }
+
+/**
+ * Educational-only estate planning checklist — no personalized legal advice,
+ * same framing as TAX_STRATEGIES above. The federal estate tax exemption
+ * ($15M/person, $30M/married couple in 2026, verified against two
+ * independent sources) means very few estates owe federal estate tax, but
+ * several states have their own estate or inheritance tax with thresholds
+ * far lower than the federal one, worth checking regardless of net worth.
+ */
+const ESTATE_CHECKLIST_ITEMS = [
+  {
+    title: "Will (Last Will and Testament)",
+    body: "Names guardians for minor children and directs how assets not covered by a beneficiary designation are divided. Without one, state \"intestacy\" law decides for you — often not what you'd have chosen.",
+  },
+  {
+    title: "Beneficiary designations",
+    body: "401(k), IRA, and life insurance proceeds pass directly to whoever is named as beneficiary — this overrides whatever your will says. Review these after marriage, divorce, a birth, or a death; an outdated beneficiary form is one of the most common estate-planning mistakes.",
+  },
+  {
+    title: "Financial power of attorney",
+    body: "Names someone to manage your money and legal affairs if you're incapacitated and can't do it yourself — without one, your family may need a court-appointed conservatorship, which is slower and more expensive.",
+  },
+  {
+    title: "Healthcare directive & healthcare proxy",
+    body: "A living will spells out your medical wishes (e.g. life support preferences); a healthcare proxy (or medical power of attorney) names someone to make decisions if you can't communicate them yourself.",
+  },
+  {
+    title: "Trust (if it fits your situation)",
+    body: "Not everyone needs one, but a revocable living trust can avoid probate, keep your affairs private, and control how/when heirs receive assets — often worth considering for blended families, minor children, or real estate in more than one state.",
+  },
+  {
+    title: "Digital assets & document access",
+    body: "A password manager (or a written list) covering financial accounts, and a note on where physical documents (will, deeds, insurance policies) are stored, so your executor can actually find and access everything.",
+  },
+  {
+    title: "Review after major life events",
+    body: "Marriage, divorce, a birth, a death, or moving to a new state are all good triggers to revisit every item above — state laws on wills, trusts, and estate tax vary, and old documents may name the wrong people or miss new assets.",
+  },
+];
