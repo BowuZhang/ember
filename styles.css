@@ -10,6 +10,8 @@
   --border: #dde5e3;
   --warn: #b3541e;
   --ok: #1f7a5c;
+  --recommend: #c08a2e;
+  --recommend-soft: #fbf1de;
   --font-body: 'Segoe UI', system-ui, sans-serif;
   --font-heading: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
 }
@@ -162,10 +164,20 @@ h1, h2, h3, h4 {
   gap: 0.75rem;
 }
 
-.slider-row input[type="range"] {
+.slider-track {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-top: 14px; /* room for the recommended-value pin above the track */
+}
+
+.slider-track input[type="range"] {
   flex: 1;
   padding: 0;
   accent-color: var(--accent);
+  position: relative;
+  z-index: 1;
 }
 
 .slider-row output {
@@ -174,6 +186,50 @@ h1, h2, h3, h4 {
   font-weight: 700;
   color: var(--accent-dark);
   font-size: 0.95rem;
+}
+
+/* Marks a well-known benchmark value (e.g. the classic 4% safe withdrawal
+   rate) directly on the slider track, in a distinct gold accent so it never
+   reads as "your current value" (that's the green thumb/fill). --mark-pos
+   is a 0-1 fraction set from JS; the calc() nudges by half the native
+   thumb's width so the mark lines up with where the thumb actually travels,
+   not the raw 0-100% of the element's box. */
+.slider-mark {
+  position: absolute;
+  top: 14px;
+  left: calc((100% - 16px) * var(--mark-pos, 0) + 8px);
+  width: 0;
+  height: 0;
+  cursor: help;
+}
+
+.slider-mark::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: 2px;
+  height: 12px;
+  background: var(--recommend);
+  border-radius: 1px;
+  opacity: 0.85;
+}
+
+.slider-mark::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--recommend);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--panel-bg), 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.slider-track:hover .slider-mark::after {
+  transform: scale(1.25);
 }
 
 .detect-row {

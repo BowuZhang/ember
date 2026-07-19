@@ -485,6 +485,21 @@ document.querySelectorAll('input[type="range"]').forEach((slider) => {
   slider.addEventListener("input", updateOutput);
 });
 
+// --- Recommended-value marks on sliders (e.g. the classic 4% SWR) ---
+
+document.querySelectorAll("input[type=\"range\"][data-recommended]").forEach((slider) => {
+  const mark = slider.parentElement.querySelector(".slider-mark");
+  if (!mark) return;
+  const min = Number(slider.min);
+  const max = Number(slider.max);
+  const recommended = Number(slider.dataset.recommended);
+  const fraction = (recommended - min) / (max - min);
+  mark.style.setProperty("--mark-pos", fraction);
+  const format = slider.dataset.format || "plain";
+  const label = format === "percent" ? `${recommended}%` : format === "age" ? `age ${recommended}` : recommended;
+  mark.title = `Typical starting point: ${label}`;
+});
+
 // --- Location detection (automatic, browser permission prompt gates it) ---
 
 const detectStatus = document.getElementById("detect-state-status");

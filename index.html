@@ -115,34 +115,46 @@
               <label class="slider-label">
                 <span class="label-row">Safe withdrawal rate <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
                 <div class="slider-row">
-                  <input type="range" id="swr" class="plan-input" data-format="percent" min="2.5" max="6" step="0.25" value="4">
+                  <div class="slider-track">
+                    <input type="range" id="swr" class="plan-input" data-format="percent" min="2.5" max="6" step="0.25" value="4" data-recommended="4">
+                    <span class="slider-mark" aria-hidden="true"></span>
+                  </div>
                   <output for="swr" id="swr-output">4%</output>
                 </div>
-                <span class="input-tip" hidden>The share of your portfolio you withdraw each year in retirement. 4% is the classic starting point (see the FIRE Plan section) — lower is more conservative for longer retirements.</span>
+                <span class="input-tip" hidden>The share of your portfolio you withdraw each year in retirement. 4% is the classic starting point (see the FIRE Plan section) — lower is more conservative for longer retirements. The dot on the slider marks this 4% benchmark.</span>
               </label>
               <label class="slider-label">
                 <span class="label-row">Expected pre-retirement return <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
                 <div class="slider-row">
-                  <input type="range" id="pre-return" class="plan-input" data-format="percent" min="0" max="12" step="0.5" value="7">
+                  <div class="slider-track">
+                    <input type="range" id="pre-return" class="plan-input" data-format="percent" min="0" max="12" step="0.5" value="7" data-recommended="7">
+                    <span class="slider-mark" aria-hidden="true"></span>
+                  </div>
                   <output for="pre-return" id="pre-return-output">7%</output>
                 </div>
-                <span class="input-tip" hidden>Average annual investment return you expect before retirement (nominal, not inflation-adjusted). 7% is a common assumption for a stock-heavy portfolio.</span>
+                <span class="input-tip" hidden>Average annual investment return you expect before retirement (nominal, not inflation-adjusted). 7% is a common assumption for a stock-heavy portfolio, marked on the slider.</span>
               </label>
               <label class="slider-label">
                 <span class="label-row">Expected post-retirement return <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
                 <div class="slider-row">
-                  <input type="range" id="post-return" class="plan-input" data-format="percent" min="0" max="12" step="0.5" value="5">
+                  <div class="slider-track">
+                    <input type="range" id="post-return" class="plan-input" data-format="percent" min="0" max="12" step="0.5" value="5" data-recommended="5">
+                    <span class="slider-mark" aria-hidden="true"></span>
+                  </div>
                   <output for="post-return" id="post-return-output">5%</output>
                 </div>
-                <span class="input-tip" hidden>Your expected return in retirement — often set lower than pre-retirement to reflect a more conservative allocation.</span>
+                <span class="input-tip" hidden>Your expected return in retirement — often set lower than pre-retirement to reflect a more conservative allocation. 5% is a common conservative assumption, marked on the slider.</span>
               </label>
               <label class="slider-label">
                 <span class="label-row">Expected inflation <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
                 <div class="slider-row">
-                  <input type="range" id="inflation" class="plan-input" data-format="percent" min="0" max="8" step="0.25" value="3">
+                  <div class="slider-track">
+                    <input type="range" id="inflation" class="plan-input" data-format="percent" min="0" max="8" step="0.25" value="3" data-recommended="3">
+                    <span class="slider-mark" aria-hidden="true"></span>
+                  </div>
                   <output for="inflation" id="inflation-output">3%</output>
                 </div>
-                <span class="input-tip" hidden>Expected average annual inflation. Everything in this tool is calculated in today's dollars using this rate.</span>
+                <span class="input-tip" hidden>Expected average annual inflation. Everything in this tool is calculated in today's dollars using this rate. 3% roughly matches the long-run historical average, marked on the slider.</span>
               </label>
               <label>
                 <span class="label-row">Tax filing status <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
@@ -170,10 +182,13 @@
               <label class="slider-label">
                 <span class="label-row">Social Security claiming age <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
                 <div class="slider-row">
-                  <input type="range" id="ss-claim-age" class="plan-input" data-format="age" min="62" max="70" step="1" value="67">
+                  <div class="slider-track">
+                    <input type="range" id="ss-claim-age" class="plan-input" data-format="age" min="62" max="70" step="1" value="67" data-recommended="67">
+                    <span class="slider-mark" aria-hidden="true"></span>
+                  </div>
                   <output for="ss-claim-age" id="ss-claim-age-output">Age 67</output>
                 </div>
-                <span class="input-tip" hidden>Claiming earlier permanently reduces your benefit; claiming later (up to 70) permanently increases it.</span>
+                <span class="input-tip" hidden>Claiming earlier permanently reduces your benefit; claiming later (up to 70) permanently increases it. Age 67 (marked on the slider) is full retirement age for most people today.</span>
               </label>
             </div>
 
