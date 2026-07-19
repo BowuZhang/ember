@@ -215,11 +215,11 @@ const PORTFOLIO_TIERS = [1000000, 3000000, 5000000, 10000000].map((portfolio) =>
 const TAX_STRATEGIES = [
   {
     title: "401(k) / 403(b)",
-    body: "Pre-tax salary deferral lowers your taxable income now and grows tax-deferred until withdrawal. 2025 employee limit: $23,500 ($31,000 if 50+, higher still for ages 60–63 under SECURE 2.0). An employer match is free money — contribute at least enough to capture all of it.",
+    body: "Pre-tax salary deferral lowers your taxable income now and grows tax-deferred until withdrawal. 2026 employee limit: $24,500 ($32,500 if 50+, up to $35,750 for ages 60–63 under SECURE 2.0's higher catch-up). An employer match is free money — contribute at least enough to capture all of it.",
   },
   {
     title: "Traditional vs. Roth IRA",
-    body: "Traditional IRA contributions may be deductible now and are taxed on withdrawal; Roth IRA contributions are after-tax but grow and withdraw tax-free. 2025 limit: $7,000 ($8,000 if 50+), with Roth eligibility phased out at higher incomes.",
+    body: "Traditional IRA contributions may be deductible now and are taxed on withdrawal; Roth IRA contributions are after-tax but grow and withdraw tax-free. 2026 limit: $7,500 ($8,600 if 50+), with Roth eligibility phased out at higher incomes.",
   },
   {
     title: "Backdoor Roth IRA",
@@ -227,7 +227,7 @@ const TAX_STRATEGIES = [
   },
   {
     title: "HSA (Health Savings Account)",
-    body: "The only triple-tax-advantaged account: pre-tax contributions, tax-free growth, and tax-free withdrawals for qualified medical expenses. After 65, non-medical withdrawals are taxed like a Traditional IRA with no penalty. 2025 limit: $4,300 individual / $8,550 family.",
+    body: "The only triple-tax-advantaged account: pre-tax contributions, tax-free growth, and tax-free withdrawals for qualified medical expenses. After 65, non-medical withdrawals are taxed like a Traditional IRA with no penalty. 2026 limit: $4,400 individual / $8,750 family (plus $1,000 catch-up at 55+).",
   },
   {
     title: "Mega backdoor Roth",
@@ -239,7 +239,7 @@ const TAX_STRATEGIES = [
   },
   {
     title: "Qualified Charitable Distributions",
-    body: "At 70½+, you can direct up to roughly $105,000/yr (2024 figure, indexed annually) from an IRA straight to charity. It counts toward your Required Minimum Distribution but isn't included in your taxable income.",
+    body: "At 70½+, you can direct up to roughly $111,000/yr (2026 figure, indexed annually) from an IRA straight to charity. It counts toward your Required Minimum Distribution but isn't included in your taxable income.",
   },
   {
     title: "Asset location",
