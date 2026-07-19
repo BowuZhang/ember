@@ -3,12 +3,13 @@
  * formula and claiming-age adjustment rules, but approximating career-average
  * indexed earnings (AIME) with a single current-income estimate rather than
  * an actual 35-year wage history — disclosed clearly in the UI. Figures are
- * 2024 bend points; the full retirement age (67) reflects workers born 1960
- * or later, the relevant group for a forward-looking planning tool.
+ * 2026 bend points (for workers first becoming eligible in 2026); the full
+ * retirement age (67) reflects workers born 1960 or later, the relevant
+ * group for a forward-looking planning tool.
  */
 
-const SS_BEND_POINT_1 = 1174; // monthly AIME, 2024
-const SS_BEND_POINT_2 = 7078;
+const SS_BEND_POINT_1 = 1286; // monthly AIME, 2026
+const SS_BEND_POINT_2 = 7749;
 const SS_FULL_RETIREMENT_AGE = 67;
 
 function computePIA(monthlyAIME) {
