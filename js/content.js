@@ -394,3 +394,30 @@ function buildACASubsidyNote(input, grossWithdrawal) {
   }
   return `At your projected ${currency(grossWithdrawal)}/yr income (roughly ${Math.round(result.fplPct)}% of the federal poverty level for your household size), you'd likely qualify for a premium tax credit worth roughly ${currency(result.subsidy)}/yr — bringing your estimated bridge-year premium down to about ${currency(result.subsidizedPremium)}/yr instead of the full ${currency(benchmarkPremium)}/yr shown above. This is exactly the kind of low-income window worth protecting — a large Roth conversion in the same year would raise your MAGI and could shrink or eliminate this subsidy.`;
 }
+
+/**
+ * Long-term care guidance: sizes the estimated cost against the user's FIRE
+ * number for scale, flags the near-universal risk (per HHS/ASPE), corrects
+ * the common "Medicare covers this" misconception, and notes the LTC
+ * insurance underwriting sweet spot (55-65) relative to the user's age.
+ */
+function buildLTCGuidance(input, ltcPlan, fireNumber) {
+  if (!ltcPlan || ltcPlan.totalCost <= 0) return "";
+
+  const pctOfFireNumber = fireNumber > 0 ? Math.round((ltcPlan.totalCost / fireNumber) * 100) : null;
+  const scaleNote =
+    pctOfFireNumber !== null
+      ? ` That's roughly ${pctOfFireNumber}% of your FIRE number — a cost most plans don't explicitly budget for.`
+      : "";
+
+  let timingNote;
+  if (input.currentAge < LTC_INSURANCE_SWEET_SPOT_MIN_AGE) {
+    timingNote = `You're still years away from the age (55-65) when LTC insurance is typically cheapest and easiest to qualify for — worth revisiting this as you approach that window, since premiums rise and health-based denials become more common with age.`;
+  } else if (input.currentAge <= LTC_INSURANCE_SWEET_SPOT_MAX_AGE) {
+    timingNote = `You're currently in the age range (55-65) where LTC insurance is typically cheapest and easiest to qualify for — worth pricing out a policy now if you haven't, since both cost and eligibility get harder with age.`;
+  } else {
+    timingNote = `You're past the age range (55-65) where LTC insurance is typically cheapest to buy — traditional policies get considerably more expensive and harder to qualify for from here, so self-funding, a hybrid life/LTC policy, or relying on home equity may be more realistic options to weigh.`;
+  }
+
+  return `About 70% of people who reach 65 develop a severe long-term care need before they die, and 48% receive some paid care, per HHS's lifetime-risk research — it's a mainstream risk, not an edge case. Medicare does not cover long-term custodial care (help with daily activities like bathing or dressing) beyond a short post-hospital stay, which is the most common misconception about paying for it. At the ${ltcPlan.monthlyRegionalCost ? currency(ltcPlan.monthlyRegionalCost) : ""}/mo estimate used above, your assumed care scenario would cost roughly ${currency(ltcPlan.totalCost)} in today's dollars.${scaleNote} ${timingNote}`;
+}

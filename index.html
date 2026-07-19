@@ -580,6 +580,36 @@
             </label>
           </div>
           <div id="aca-subsidy-note" class="strategy-block strategy-block--healthcare" hidden></div>
+
+          <h3>Long-term care</h3>
+          <p class="panel-intro">About 70% of people who reach 65 develop a severe long-term care need before they die (HHS/ASPE) — this models a stretch of paid care as an extra cost, since Medicare doesn't cover long-term custodial care.</p>
+          <div class="form-grid">
+            <label class="checkbox-label">
+              <input type="checkbox" id="include-ltc" class="plan-input">
+              Include long-term care cost in projection
+            </label>
+            <label>
+              <span class="label-row">Type of care <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
+              <select id="ltc-care-type" class="plan-input">
+                <option value="homeHealthAide">Home health aide (part-time)</option>
+                <option value="assistedLiving">Assisted living facility</option>
+                <option value="nursingHomeSemiPrivate">Nursing home (semi-private)</option>
+                <option value="nursingHomePrivate">Nursing home (private room)</option>
+              </select>
+              <span class="input-tip" hidden>National median costs from the 2025 CareScout/Genworth Cost of Care Survey, scaled by your state's cost of living.</span>
+            </label>
+            <label>
+              <span class="label-row">Age care might begin <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
+              <input type="number" id="ltc-start-age" class="plan-input" min="50" max="100" placeholder="e.g. 82">
+              <span class="input-tip" hidden>Care most often begins in one's early-to-mid 80s, but this varies widely — treat it as a rough planning assumption.</span>
+            </label>
+            <label>
+              <span class="label-row">Expected duration (years) <button type="button" class="info-icon" aria-label="What is this?">i</button></span>
+              <input type="number" id="ltc-duration" class="plan-input" min="1" max="15" placeholder="e.g. 3">
+              <span class="input-tip" hidden>Average paid-care duration is roughly 3 years, though it varies by condition and gender — adjust to stress-test a longer stretch.</span>
+            </label>
+          </div>
+          <div id="ltc-guidance" class="strategy-block strategy-block--healthcare" hidden></div>
         </div>
       </section>
 
@@ -760,6 +790,7 @@
   <script src="js/family.js"></script>
   <script src="js/mortgage.js"></script>
   <script src="js/healthcare.js"></script>
+  <script src="js/ltc.js"></script>
   <script src="js/highincome.js"></script>
   <script src="js/socialsecurity.js"></script>
   <script src="js/montecarlo.js"></script>

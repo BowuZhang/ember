@@ -107,6 +107,15 @@ function readHealthcareInputs(retirementAge, stateCode) {
   };
 }
 
+function readLTCInputs() {
+  return {
+    includeLTC: document.getElementById("include-ltc").checked,
+    careType: document.getElementById("ltc-care-type").value,
+    startAge: Number(document.getElementById("ltc-start-age").value) || 82,
+    durationYears: Number(document.getElementById("ltc-duration").value) || 3,
+  };
+}
+
 /** Merges any number of {age: amount} maps by summing overlapping ages. */
 function mergeAmountMaps(...maps) {
   const merged = {};
@@ -395,6 +404,11 @@ function render(input) {
   const healthcareInput = readHealthcareInputs(input.retirementAge, input.stateCode);
   const healthcarePlan = buildHealthcarePlan(healthcareInput);
 
+  const ltcInput = readLTCInputs();
+  const ltcPlan = ltcInput.includeLTC
+    ? buildLTCPlan(ltcInput.careType, ltcInput.startAge, ltcInput.durationYears, STATE_DATA[input.stateCode])
+    : { extraExpensesByAge: {}, totalCost: 0, monthlyRegionalCost: 0, milestones: [] };
+
   const ssInput = readSocialSecurityInputs(input.currentAge, input.filingStatus);
   const ssPlan = buildSocialSecurityPlan(ssInput);
 
@@ -402,7 +416,8 @@ function render(input) {
     extraExpensesByAge: mergeAmountMaps(
       familyPlan.extraExpensesByAge,
       mortgagePlan.extraExpensesByAge,
-      healthcarePlan.extraExpensesByAge
+      healthcarePlan.extraExpensesByAge,
+      ltcPlan.extraExpensesByAge
     ),
     externalIncomeByAge: ssPlan.externalIncomeByAge,
   };
@@ -417,6 +432,16 @@ function render(input) {
   const acaNoteEl = document.getElementById("aca-subsidy-note");
   acaNoteEl.innerHTML = `<span class="strategy-tag">Healthcare bridge</span><h4>Would you qualify for ACA subsidies?</h4><p>${buildACASubsidyNote(input, result.grossAnnualWithdrawal)}</p>`;
   acaNoteEl.hidden = false;
+
+  // --- Long-term care guidance ---
+  const ltcGuidanceEl = document.getElementById("ltc-guidance");
+  const ltcGuidanceText = buildLTCGuidance(input, ltcPlan, result.fireNumber);
+  if (ltcGuidanceText) {
+    ltcGuidanceEl.innerHTML = `<span class="strategy-tag">Long-term care</span><h4>Planning for the cost of care</h4><p>${ltcGuidanceText}</p>`;
+    ltcGuidanceEl.hidden = false;
+  } else {
+    ltcGuidanceEl.hidden = true;
+  }
 
   const fireType = classifyFireType(input, result);
   const computedFireKey = FIRE_TYPE_KEY_BY_LABEL[fireType.label] || "traditional";
@@ -483,7 +508,7 @@ function render(input) {
   );
 
   // --- Timeline ---
-  const allMilestones = [...familyPlan.milestones, ...mortgagePlan.milestones, ...ssPlan.milestones];
+  const allMilestones = [...familyPlan.milestones, ...mortgagePlan.milestones, ...ssPlan.milestones, ...ltcPlan.milestones];
   const milestones = buildTimelineMilestones(input, result, allMilestones);
   renderTimeline(document.getElementById("timeline-container"), milestones, input.currentAge);
 
