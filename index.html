@@ -24,6 +24,7 @@
       <button class="topnav-link" data-view="statistics">Statistics</button>
       <button class="topnav-link" data-view="tax-strategies">Tax Strategies</button>
       <button class="topnav-link" data-view="retirement-life">Retirement Life</button>
+      <button class="topnav-link" data-view="life-planning">Life Planning</button>
     </div>
   </nav>
 
@@ -63,6 +64,13 @@
           </span>
           <h2>Retirement Life</h2>
           <p>Take the quiz to find your retirement personality, then browse activity ideas for all eight types.</p>
+        </button>
+        <button class="menu-card" data-view="life-planning">
+          <span class="menu-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4l3.5 7 7.5 1.1-5.5 5.3 1.3 7.6L16 21.5l-6.8 3.5 1.3-7.6L5 12.1 12.5 11z" stroke-linejoin="round"/></svg>
+          </span>
+          <h2>Life Planning</h2>
+          <p>Net worth, emergency fund, debt payoff, estate basics, life goals, and insurance — the foundations around retirement, for any age or stage.</p>
         </button>
       </div>
     </main>
@@ -780,6 +788,112 @@
         <h2>Life after retirement</h2>
         <p id="life-after-intro" class="panel-intro">The transition into retirement is as much about time and purpose as it is about money. A few areas worth planning deliberately:</p>
         <div id="life-after-categories" class="card-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="view-life-planning" class="view" hidden>
+    <header class="page-header">
+      <h1>Life Planning</h1>
+      <p class="subtitle">The financial foundations that support retirement planning at any age — net worth, emergency savings, debt payoff, estate basics, life goals, and insurance.</p>
+    </header>
+    <main>
+      <section class="panel" id="panel-networth">
+        <button class="panel-toggle" aria-expanded="true" aria-controls="panel-networth-body">
+          <h2>Net worth</h2>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+        <div class="panel-body" id="panel-networth-body">
+          <p class="panel-intro">A full balance sheet, not just the retirement portfolio — everything updates live as you type.</p>
+          <h3>Assets</h3>
+          <div class="form-grid">
+            <label>
+              <span class="label-row">Retirement accounts (401k, IRA, etc.)</span>
+              <input type="text" inputmode="numeric" id="nw-retirement" class="networth-input currency-input" placeholder="e.g. $150,000">
+            </label>
+            <label>
+              <span class="label-row">Cash &amp; savings</span>
+              <input type="text" inputmode="numeric" id="nw-cash" class="networth-input currency-input" placeholder="e.g. $20,000">
+            </label>
+            <label>
+              <span class="label-row">Taxable investments</span>
+              <input type="text" inputmode="numeric" id="nw-taxable" class="networth-input currency-input" placeholder="e.g. $30,000">
+            </label>
+            <label>
+              <span class="label-row">Home value</span>
+              <input type="text" inputmode="numeric" id="nw-home" class="networth-input currency-input" placeholder="e.g. $400,000">
+            </label>
+            <label>
+              <span class="label-row">Other assets (vehicles, business, etc.)</span>
+              <input type="text" inputmode="numeric" id="nw-other-assets" class="networth-input currency-input" placeholder="e.g. $15,000">
+            </label>
+          </div>
+
+          <h3>Debts</h3>
+          <div class="form-grid">
+            <label>
+              <span class="label-row">Mortgage balance</span>
+              <input type="text" inputmode="numeric" id="nw-mortgage-balance" class="networth-input currency-input" placeholder="e.g. $250,000">
+            </label>
+            <label>
+              <span class="label-row">Other debt (student loans, cards, auto, etc.)</span>
+              <input type="text" inputmode="numeric" id="nw-other-debt" class="networth-input currency-input" placeholder="e.g. $10,000">
+            </label>
+          </div>
+
+          <div class="summary-cards">
+            <div class="card">
+              <span class="card-label">Total assets</span>
+              <span class="card-value" id="nw-total-assets">$0</span>
+            </div>
+            <div class="card">
+              <span class="card-label">Total debts</span>
+              <span class="card-value" id="nw-total-debts">$0</span>
+            </div>
+            <div class="card">
+              <span class="card-label">Net worth</span>
+              <span class="card-value" id="nw-net-worth">$0</span>
+            </div>
+          </div>
+          <p id="nw-percentile-note" class="panel-intro"></p>
+          <p class="disclaimer">A snapshot, not a projection — this doesn't feed into the retirement calculator above; use "Current portfolio value" there for your retirement-specific balance.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-emergencyfund">
+        <button class="panel-toggle" aria-expanded="false" aria-controls="panel-emergencyfund-body">
+          <h2>Emergency fund &amp; debt payoff</h2>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+        <div class="panel-body" id="panel-emergencyfund-body" hidden>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-estate">
+        <button class="panel-toggle" aria-expanded="false" aria-controls="panel-estate-body">
+          <h2>Estate planning checklist <span class="panel-tag">Educational</span></h2>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+        <div class="panel-body" id="panel-estate-body" hidden>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-goals">
+        <button class="panel-toggle" aria-expanded="false" aria-controls="panel-goals-body">
+          <h2>Life goals beyond retirement</h2>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+        <div class="panel-body" id="panel-goals-body" hidden>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-insurance">
+        <button class="panel-toggle" aria-expanded="false" aria-controls="panel-insurance-body">
+          <h2>Insurance needs</h2>
+          <span class="chevron" aria-hidden="true"></span>
+        </button>
+        <div class="panel-body" id="panel-insurance-body" hidden>
+        </div>
       </section>
     </main>
   </div>

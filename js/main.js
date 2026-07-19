@@ -947,7 +947,7 @@ function renderHomeSummary() {
 
 // --- Page navigation ---
 
-const VIEWS = ["home", "calculator", "statistics", "tax-strategies", "retirement-life"];
+const VIEWS = ["home", "calculator", "statistics", "tax-strategies", "retirement-life", "life-planning"];
 
 function showView(name) {
   if (!VIEWS.includes(name)) name = "home";
@@ -958,6 +958,7 @@ function showView(name) {
     btn.classList.toggle("active", btn.getAttribute("data-view") === name);
   });
   if (name === "home") renderHomeSummary();
+  if (name === "life-planning") prefillNetWorthFromCalculator();
   window.scrollTo(0, 0);
   if (location.hash.slice(1) !== name) location.hash = name;
 }
@@ -1234,8 +1235,92 @@ document.getElementById("clear-saved-btn").addEventListener("click", () => {
   clearLastPlan();
   clearQuizState();
   resetQuiz();
+  clearNetWorthData();
   showPlanIOStatus("Saved data cleared from this browser.", false);
 });
+
+// --- Net worth tracker (localStorage) ---
+
+const NETWORTH_STORAGE_KEY = "ember-networth";
+
+function saveNetWorthData() {
+  try {
+    const data = {};
+    document.querySelectorAll(".networth-input").forEach((el) => (data[el.id] = el.value));
+    localStorage.setItem(NETWORTH_STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    // localStorage unavailable — fail silently
+  }
+}
+
+function loadNetWorthData() {
+  try {
+    const raw = localStorage.getItem(NETWORTH_STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    Object.entries(data).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = value;
+    });
+    document.querySelectorAll(".networth-input.currency-input").forEach((el) => el.dispatchEvent(new Event("input")));
+  } catch (e) {
+    // ignore corrupted saved data
+  }
+}
+
+function clearNetWorthData() {
+  try {
+    localStorage.removeItem(NETWORTH_STORAGE_KEY);
+  } catch (e) {
+    // ignore
+  }
+  document.querySelectorAll(".networth-input").forEach((el) => (el.value = ""));
+  recomputeNetWorth();
+}
+
+function recomputeNetWorth() {
+  const val = (id) => parseCurrency(document.getElementById(id).value);
+  const totalAssets = val("nw-retirement") + val("nw-cash") + val("nw-taxable") + val("nw-home") + val("nw-other-assets");
+  const totalDebts = val("nw-mortgage-balance") + val("nw-other-debt");
+  const netWorth = totalAssets - totalDebts;
+
+  document.getElementById("nw-total-assets").textContent = currency(totalAssets);
+  document.getElementById("nw-total-debts").textContent = currency(totalDebts);
+  document.getElementById("nw-net-worth").textContent = currency(netWorth);
+
+  const noteEl = document.getElementById("nw-percentile-note");
+  if (totalAssets === 0 && totalDebts === 0) {
+    noteEl.textContent = "";
+    return;
+  }
+  let note = `Nationally, this ${describeNetWorthRank(netWorth)}.`;
+  if (lastInput && lastInput.currentAge) {
+    const bracket = RETIREMENT_STATS_BY_AGE.find((b) => b.label === ageToBracketLabel(lastInput.currentAge));
+    if (bracket) {
+      note += ` The median household aged ${bracket.label} has a net worth of ${currency(bracket.netWorth)}.`;
+    }
+  }
+  noteEl.textContent = note;
+}
+
+document.querySelectorAll(".networth-input").forEach((el) => {
+  el.addEventListener("input", () => {
+    recomputeNetWorth();
+    saveNetWorthData();
+  });
+});
+
+loadNetWorthData();
+recomputeNetWorth();
+
+/** One-time convenience prefill from the calculator's own portfolio value — only if the field is still untouched. */
+function prefillNetWorthFromCalculator() {
+  const retirementField = document.getElementById("nw-retirement");
+  if (!lastInput || retirementField.value) return;
+  retirementField.value = currency(lastInput.currentPortfolio);
+  recomputeNetWorth();
+  saveNetWorthData();
+}
 
 function parseInitialHash() {
   const raw = location.hash.slice(1);
