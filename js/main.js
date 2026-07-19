@@ -1480,6 +1480,38 @@ function recomputeGoals() {
   summaryEl.hidden = false;
 }
 
+function recomputeInsurance() {
+  const nonMortgageDebt = parseCurrency(document.getElementById("ins-debt").value);
+  const annualIncome = parseCurrency(document.getElementById("ins-income").value);
+  const incomeReplacementYears = Number(document.getElementById("ins-income-years").value) || 10;
+  const mortgageBalance = parseCurrency(document.getElementById("ins-mortgage").value);
+  const educationCost = parseCurrency(document.getElementById("ins-education").value);
+  const existingCoverage = parseCurrency(document.getElementById("ins-existing-coverage").value);
+
+  const { dimeTotal, gap } = computeDIMENeed(
+    nonMortgageDebt,
+    annualIncome,
+    incomeReplacementYears,
+    mortgageBalance,
+    educationCost,
+    existingCoverage
+  );
+  document.getElementById("ins-dime-total").textContent = currency(dimeTotal);
+  document.getElementById("ins-gap").textContent = currency(gap);
+
+  const disabilityEl = document.getElementById("disability-guidance");
+  if (annualIncome <= 0) {
+    disabilityEl.hidden = true;
+    return;
+  }
+  const d = estimateDisabilityCoverage(annualIncome);
+  disabilityEl.innerHTML = `
+    <h4>How much disability coverage makes sense?</h4>
+    <p>At ${currency(annualIncome)}/yr, a typical long-term disability policy would target roughly ${currency(d.monthlyBenefitLow)}-${currency(d.monthlyBenefitHigh)}/mo in benefits (60-70% of gross income — insurers cap coverage there to keep some incentive to return to work). Expect the premium to run roughly ${currency(d.annualPremiumLow)}-${currency(d.annualPremiumHigh)}/yr (1-3% of income), more for a stricter "true own-occupation" definition (pays out even if you could work in some other job) versus a cheaper "any-occupation" policy.</p>
+  `;
+  disabilityEl.hidden = false;
+}
+
 renderEstateChecklist();
 
 document.querySelectorAll(".lifeplan-input").forEach((el) => {
@@ -1488,6 +1520,7 @@ document.querySelectorAll(".lifeplan-input").forEach((el) => {
     recomputeEmergencyFund();
     recomputeDebtPayoff();
     recomputeGoals();
+    recomputeInsurance();
     saveLifePlanData();
   });
 });
@@ -1498,6 +1531,7 @@ recomputeEmergencyFund();
 recomputeDebtPayoff();
 updateEstateChecklistProgress();
 recomputeGoals();
+recomputeInsurance();
 
 /** One-time convenience prefill from the calculator's own portfolio value — only if the field is still untouched. */
 function prefillNetWorthFromCalculator() {

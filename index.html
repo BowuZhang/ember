@@ -1048,6 +1048,49 @@
           <span class="chevron" aria-hidden="true"></span>
         </button>
         <div class="panel-body" id="panel-insurance-body" hidden>
+          <h3>Life insurance (DIME method)</h3>
+          <p class="panel-intro">A standard rule-of-thumb worksheet: <strong>D</strong>ebt + <strong>I</strong>ncome replacement + <strong>M</strong>ortgage + <strong>E</strong>ducation. Not a substitute for a full needs analysis, but a solid starting point.</p>
+          <div class="form-grid">
+            <label>
+              <span class="label-row">Non-mortgage debt (cards, student loans, auto, etc.)</span>
+              <input type="text" inputmode="numeric" id="ins-debt" class="lifeplan-input currency-input" placeholder="e.g. $15,000">
+            </label>
+            <label>
+              <span class="label-row">Annual income to replace</span>
+              <input type="text" inputmode="numeric" id="ins-income" class="lifeplan-input currency-input" placeholder="e.g. $80,000">
+            </label>
+            <label>
+              <span class="label-row">Years of income replacement</span>
+              <input type="number" id="ins-income-years" class="lifeplan-input" min="1" max="30" placeholder="e.g. 10">
+            </label>
+            <label>
+              <span class="label-row">Mortgage balance</span>
+              <input type="text" inputmode="numeric" id="ins-mortgage" class="lifeplan-input currency-input" placeholder="e.g. $250,000">
+            </label>
+            <label>
+              <span class="label-row">Remaining education costs for dependents</span>
+              <input type="text" inputmode="numeric" id="ins-education" class="lifeplan-input currency-input" placeholder="e.g. $100,000">
+            </label>
+            <label>
+              <span class="label-row">Existing life insurance coverage</span>
+              <input type="text" inputmode="numeric" id="ins-existing-coverage" class="lifeplan-input currency-input" placeholder="e.g. $250,000">
+            </label>
+          </div>
+          <div class="summary-cards">
+            <div class="card">
+              <span class="card-label">DIME total need</span>
+              <span class="card-value" id="ins-dime-total">$0</span>
+            </div>
+            <div class="card">
+              <span class="card-label">Additional coverage recommended</span>
+              <span class="card-value" id="ins-gap">$0</span>
+            </div>
+          </div>
+
+          <h3>Disability insurance</h3>
+          <p class="panel-intro">Long-term disability is more likely than an early death for most working-age people, and Social Security Disability Insurance is notoriously hard to qualify for — a gap most people underinsure.</p>
+          <div id="disability-guidance" class="strategy-block strategy-block--income" hidden></div>
+          <p class="disclaimer">Educational information based on simplified assumptions, not insurance or financial advice — an insurance professional can account for group coverage through work, health conditions, and your specific state's rules.</p>
         </div>
       </section>
     </main>
@@ -1068,6 +1111,7 @@
   <script src="js/rmd.js"></script>
   <script src="js/debtpayoff.js"></script>
   <script src="js/goals.js"></script>
+  <script src="js/insurance.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/content.js"></script>
   <script src="js/monetization.js"></script>
