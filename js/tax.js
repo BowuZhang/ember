@@ -1,33 +1,34 @@
 /**
  * Simplified federal + state effective tax rate estimator, used to gross up
  * a desired after-tax retirement income into a required gross withdrawal.
- * Brackets are approximate 2024 figures for planning purposes only.
+ * Brackets are 2026 figures (IRS Rev. Proc. 2025-32 / OBBBA adjustments),
+ * for planning purposes only.
  */
 
 const FEDERAL_BRACKETS = {
   single: [
-    { upTo: 11600, rate: 0.10 },
-    { upTo: 47150, rate: 0.12 },
-    { upTo: 100525, rate: 0.22 },
-    { upTo: 191950, rate: 0.24 },
-    { upTo: 243725, rate: 0.32 },
-    { upTo: 609350, rate: 0.35 },
+    { upTo: 12400, rate: 0.10 },
+    { upTo: 50400, rate: 0.12 },
+    { upTo: 105700, rate: 0.22 },
+    { upTo: 201775, rate: 0.24 },
+    { upTo: 256225, rate: 0.32 },
+    { upTo: 640600, rate: 0.35 },
     { upTo: Infinity, rate: 0.37 },
   ],
   married: [
-    { upTo: 23200, rate: 0.10 },
-    { upTo: 94300, rate: 0.12 },
-    { upTo: 201050, rate: 0.22 },
-    { upTo: 383900, rate: 0.24 },
-    { upTo: 487450, rate: 0.32 },
-    { upTo: 731200, rate: 0.35 },
+    { upTo: 24800, rate: 0.10 },
+    { upTo: 100800, rate: 0.12 },
+    { upTo: 211400, rate: 0.22 },
+    { upTo: 403550, rate: 0.24 },
+    { upTo: 512450, rate: 0.32 },
+    { upTo: 768700, rate: 0.35 },
     { upTo: Infinity, rate: 0.37 },
   ],
 };
 
 const STANDARD_DEDUCTION = {
-  single: 14600,
-  married: 29200,
+  single: 16100,
+  married: 32200,
 };
 
 function federalTax(grossIncome, filingStatus) {
