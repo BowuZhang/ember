@@ -57,3 +57,63 @@ function buildHealthcarePlan(input) {
   // elsewhere, so this plan only contributes costs, not new milestones.
   return { extraExpensesByAge, firstYearEstimate: extraExpensesByAge[retirementAge] || 0 };
 }
+
+/**
+ * ACA premium tax credit (subsidy) estimate for the bridge years. The
+ * "enhanced" subsidies (no income cap, capped at 8.5% of income) expired at
+ * the end of 2025 — 2026 coverage reverts to the ORIGINAL ACA formula: a
+ * hard cutoff at 400% of the federal poverty level (no subsidy at all above
+ * it) and a steeper sliding-scale contribution below it. Verified against
+ * IRS Rev. Proc. 2025-25 (applicable percentage table) and the 2025 HHS
+ * poverty guidelines (used for 2026 coverage, per standard ACA timing).
+ */
+const ACA_FPL_HOUSEHOLD_1 = 15650; // 2025 guideline, 48 contiguous states + DC, used for 2026 coverage
+const ACA_FPL_PER_ADDITIONAL_PERSON = 5500;
+
+function acaFederalPovertyLevel(householdSize) {
+  return ACA_FPL_HOUSEHOLD_1 + (householdSize - 1) * ACA_FPL_PER_ADDITIONAL_PERSON;
+}
+
+// 2026 applicable-percentage table (reverted to the original, non-enhanced formula).
+const ACA_APPLICABLE_PERCENTAGE_TABLE = [
+  { fplLow: 0, fplHigh: 133, pctLow: 0.021, pctHigh: 0.021 },
+  { fplLow: 133, fplHigh: 150, pctLow: 0.0314, pctHigh: 0.0419 },
+  { fplLow: 150, fplHigh: 200, pctLow: 0.0419, pctHigh: 0.066 },
+  { fplLow: 200, fplHigh: 250, pctLow: 0.066, pctHigh: 0.0844 },
+  { fplLow: 250, fplHigh: 300, pctLow: 0.0844, pctHigh: 0.0996 },
+  { fplLow: 300, fplHigh: 400, pctLow: 0.0996, pctHigh: 0.0996 },
+];
+
+function acaApplicablePercentage(fplPct) {
+  for (const tier of ACA_APPLICABLE_PERCENTAGE_TABLE) {
+    if (fplPct <= tier.fplHigh) {
+      const span = tier.fplHigh - tier.fplLow;
+      const t = span > 0 ? (fplPct - tier.fplLow) / span : 0;
+      return tier.pctLow + t * (tier.pctHigh - tier.pctLow);
+    }
+  }
+  return null; // above 400% FPL — no subsidy
+}
+
+/**
+ * @param {number} annualIncome MAGI proxy for the bridge years.
+ * @param {number} householdSize 1 for single, 2 for married (Ember doesn't
+ *   track dependents separately, so this mirrors the filing-status
+ *   simplification used elsewhere in the app).
+ * @param {number} benchmarkAnnualPremium the full unsubsidized premium
+ *   already computed by estimateAnnualHealthcarePremium.
+ */
+function estimateACASubsidy(annualIncome, householdSize, benchmarkAnnualPremium) {
+  const fpl = acaFederalPovertyLevel(householdSize);
+  const fplPct = (annualIncome / fpl) * 100;
+  if (fplPct > 400) {
+    return { status: "above-cliff", fplPct, subsidizedPremium: benchmarkAnnualPremium, subsidy: 0 };
+  }
+  if (fplPct < 100) {
+    return { status: "likely-medicaid", fplPct, subsidizedPremium: null, subsidy: null };
+  }
+  const pct = acaApplicablePercentage(fplPct);
+  const requiredContribution = annualIncome * pct;
+  const subsidy = Math.max(0, Math.min(benchmarkAnnualPremium, benchmarkAnnualPremium - requiredContribution));
+  return { status: "subsidized", fplPct, subsidizedPremium: benchmarkAnnualPremium - subsidy, subsidy, requiredContribution };
+}

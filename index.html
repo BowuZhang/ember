@@ -34,6 +34,7 @@
       <p class="subtitle">A free, one-stop shop for planning retirement: project your numbers, see how you compare to national benchmarks, and explore strategies to keep more of what you save — all running locally in your browser.</p>
     </header>
     <main>
+      <div id="home-summary" class="home-summary" hidden></div>
       <div class="home-menu">
         <button class="menu-card" data-view="calculator">
           <span class="menu-card-icon" aria-hidden="true">
@@ -315,10 +316,24 @@
           </div>
           <div class="gated-content" hidden>
             <div id="state-comparison" class="state-comparison"></div>
+
+            <h3>Best states for your plan</h3>
+            <p id="best-states-intro" class="panel-intro"></p>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Rank</th><th>State</th><th>Combined tax rate</th><th>Gross withdrawal needed</th><th>Cost of living</th><th>vs. your state</th></tr>
+                </thead>
+                <tbody id="best-states-body"></tbody>
+              </table>
+            </div>
+
             <p class="disclaimer">
               Simplified, illustrative estimates only — not financial, tax, or investment advice. State
               tax figures are approximate composites and change frequently; federal brackets reflect
-              2026 figures. Confirm current numbers with a qualified professional.
+              2026 figures. "Gross withdrawal needed" is tax efficiency only — it doesn't account for
+              cost of living, which is shown alongside for context but not blended into the ranking.
+              Confirm current numbers with a qualified professional.
             </p>
           </div>
         </div>
@@ -509,6 +524,7 @@
               <span class="input-tip" hidden>A benchmark premium at age 40, scaled up for age and your state's cost of living to estimate your actual bridge cost.</span>
             </label>
           </div>
+          <div id="aca-subsidy-note" class="strategy-block" hidden></div>
         </div>
       </section>
 

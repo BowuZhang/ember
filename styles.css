@@ -113,6 +113,53 @@ h1, h2, h3, h4 {
   gap: 1.25rem;
 }
 
+.home-summary {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.home-summary-greeting {
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin-bottom: 0.9rem;
+  font-size: 1.05rem;
+}
+
+.home-summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.home-summary-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.home-summary-value {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+}
+
+.home-summary-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.home-summary p {
+  margin-bottom: 0.9rem;
+}
+
 .menu-card {
   background: var(--panel-bg);
   border: 1px solid var(--border);
@@ -812,6 +859,15 @@ input:focus, select:focus {
   text-transform: uppercase;
   font-size: 0.72rem;
   letter-spacing: 0.4px;
+}
+
+.best-states-current {
+  background: var(--accent-soft, rgba(31, 122, 92, 0.08));
+}
+
+.best-states-current td {
+  font-weight: 700;
+  color: var(--accent-dark);
 }
 
 .fire-tabs {

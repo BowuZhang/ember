@@ -153,6 +153,62 @@ function buildStateCard(stateCode, input, result) {
   `;
 }
 
+/**
+ * Ranks every state by lowest gross withdrawal needed to fund the user's
+ * desired spending — i.e. tax efficiency. Several states genuinely tie at
+ * $0 effective retirement tax (their real policy, not a bug), so ties are
+ * broken by cost of living rather than left to arbitrary insertion order —
+ * that keeps the display order meaningful without changing what "best"
+ * means for the primary ranking.
+ */
+function rankStatesForPlan(input) {
+  return Object.entries(STATE_DATA)
+    .map(([code, info]) => {
+      const grossWithdrawal = grossUpForTaxes(input.annualExpensesToday, input.filingStatus, info);
+      const rate = combinedEffectiveRate(grossWithdrawal, input.filingStatus, info);
+      return { code, name: info.name, grossWithdrawal, rate, colIndex: info.costOfLivingIndex };
+    })
+    .sort((a, b) => a.grossWithdrawal - b.grossWithdrawal || a.colIndex - b.colIndex);
+}
+
+function renderBestStatesTable(input) {
+  const ranked = rankStatesForPlan(input);
+  const currentIndex = ranked.findIndex((s) => s.code === input.stateCode);
+  const currentEntry = ranked[currentIndex];
+  const currentRank = currentIndex + 1;
+
+  const introEl = document.getElementById("best-states-intro");
+  const potentialSavings = currentEntry.grossWithdrawal - ranked[0].grossWithdrawal;
+  const introBase = `Ranked by lowest gross withdrawal needed to fund your ${currency(input.annualExpensesToday)}/yr spending — a rough proxy for tax efficiency.`;
+  if (potentialSavings < 1) {
+    introEl.textContent = `${introBase} Your state, ${currentEntry.name}, already ties for the most tax-efficient tier — there's no purely tax-driven reason to move on this measure alone.`;
+  } else if (currentRank > 5) {
+    introEl.textContent = `${introBase} Your state, ${currentEntry.name}, ranks #${currentRank} of ${ranked.length}; the #1 state would need roughly ${currency(potentialSavings)}/yr less from your portfolio at the same spending level.`;
+  } else {
+    introEl.textContent = `${introBase} Your state, ${currentEntry.name}, is already in the top 5.`;
+  }
+
+  const displayed = currentRank > 5 ? [...ranked.slice(0, 5), currentEntry] : ranked.slice(0, 5);
+  document.getElementById("best-states-body").innerHTML = displayed
+    .map((s) => {
+      const rank = ranked.indexOf(s) + 1;
+      const isCurrent = s.code === input.stateCode;
+      const savings = currentEntry.grossWithdrawal - s.grossWithdrawal;
+      const savingsText = isCurrent || Math.abs(savings) < 1 ? "—" : savings > 0 ? `${currency(savings)}/yr less needed` : `${currency(-savings)}/yr more needed`;
+      return `
+        <tr class="${isCurrent ? "best-states-current" : ""}">
+          <td>${rank}</td>
+          <td>${s.name}${isCurrent ? " (yours)" : ""}</td>
+          <td>${percent(s.rate)}</td>
+          <td>${currency(s.grossWithdrawal)}</td>
+          <td>${s.colIndex}</td>
+          <td>${savingsText}</td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
 function renderFireTypeTabs(computedKey) {
   const activeKey = selectedFireTypeKey || computedKey;
   const tabsEl = document.getElementById("fire-type-tabs");
@@ -241,6 +297,12 @@ function render(input) {
   const result = runProjection(input, adjustments);
   lastResult = result;
   lastSSPlan = ssPlan;
+
+  // --- ACA subsidy estimate for the healthcare bridge ---
+  const acaNoteEl = document.getElementById("aca-subsidy-note");
+  acaNoteEl.innerHTML = `<h4>Would you qualify for ACA subsidies?</h4><p>${buildACASubsidyNote(input, result.grossAnnualWithdrawal)}</p>`;
+  acaNoteEl.hidden = false;
+
   const fireType = classifyFireType(input, result);
   const computedFireKey = FIRE_TYPE_KEY_BY_LABEL[fireType.label] || "traditional";
 
@@ -312,6 +374,7 @@ function render(input) {
   let stateHtml = buildStateCard(input.stateCode, input, result);
   if (compareStateSelect.value) stateHtml += buildStateCard(compareStateSelect.value, input, result);
   document.getElementById("state-comparison").innerHTML = stateHtml;
+  renderBestStatesTable(input);
 
   // --- Tax deep-dive ---
   const stateInfo = STATE_DATA[input.stateCode];
@@ -365,6 +428,8 @@ function render(input) {
   if (activeBudgetFitEl) {
     renderBudgetFitGauge(activeBudgetFitEl, findPersonality(activePersonalityKey).budgetRange, input.annualExpensesToday);
   }
+
+  renderHomeSummary();
 
   saveLastPlan();
 }
@@ -590,6 +655,55 @@ window.addEventListener("resize", () => {
   }, 150);
 });
 
+// --- Personalized home-page summary ---
+
+function renderHomeSummary() {
+  const el = document.getElementById("home-summary");
+  if (!el) return;
+  if (!lastInput || !lastResult) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+
+  const fireAgeText =
+    lastResult.fireAge !== null
+      ? `on track to hit your FIRE number around age ${lastResult.fireAge}`
+      : `not yet on track to hit your FIRE number by age ${lastInput.retirementAge}`;
+  const sustainabilityText = lastResult.sustainable
+    ? `your portfolio is projected to last through age ${MAX_PLANNING_AGE}`
+    : `it's projected to run out around age ${lastResult.depletedAge}`;
+
+  let personalityHtml = "";
+  const quizState = loadQuizState();
+  if (quizState && quizState.completed && quizState.quizScores) {
+    const maxScore = Math.max(...Object.values(quizState.quizScores));
+    const winnerKey = QUIZ_TYPE_ORDER.find((t) => quizState.quizScores[t] === maxScore);
+    const personality = findPersonality(winnerKey);
+    if (personality) {
+      personalityHtml = `<p class="home-summary-personality">Your retirement style: <strong>${personality.emoji} ${personality.label}</strong> — <button type="button" class="link-btn" data-view="retirement-life">see your activities →</button></p>`;
+    }
+  }
+
+  el.innerHTML = `
+    <p class="home-summary-greeting">Welcome back — here's where your plan stands:</p>
+    <div class="home-summary-stats">
+      <div class="home-summary-stat"><span class="home-summary-value">${currency(lastResult.fireNumber)}</span><span class="home-summary-label">FIRE number</span></div>
+      <div class="home-summary-stat"><span class="home-summary-value">${currency(lastInput.currentPortfolio)}</span><span class="home-summary-label">Current portfolio</span></div>
+      <div class="home-summary-stat"><span class="home-summary-value">${lastInput.currentAge} → ${lastInput.retirementAge}</span><span class="home-summary-label">Now → retirement age</span></div>
+    </div>
+    <p>You're ${fireAgeText}, and ${sustainabilityText}.</p>
+    ${personalityHtml}
+    <button type="button" class="primary-btn" data-view="calculator">View full plan →</button>
+  `;
+  el.querySelectorAll("[data-view]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      showView(btn.getAttribute("data-view"));
+      closeHamburgerMenu();
+    });
+  });
+}
+
 // --- Page navigation ---
 
 const VIEWS = ["home", "calculator", "statistics", "tax-strategies", "retirement-life"];
@@ -602,6 +716,7 @@ function showView(name) {
   document.querySelectorAll(".topnav-link").forEach((btn) => {
     btn.classList.toggle("active", btn.getAttribute("data-view") === name);
   });
+  if (name === "home") renderHomeSummary();
   window.scrollTo(0, 0);
   if (location.hash.slice(1) !== name) location.hash = name;
 }

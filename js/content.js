@@ -364,3 +364,30 @@ function buildHighIncomeImpact(input, grossWithdrawal, ssBenefit) {
     <p>${ssText}</p>
   `;
 }
+
+/**
+ * Personalized ACA premium-tax-credit estimate for the healthcare bridge
+ * years, replacing the generic "most retirees qualify for subsidies" note
+ * with an actual estimate based on the user's projected income. Uses
+ * grossWithdrawal as a MAGI proxy, same simplification as the high-income
+ * impact panel.
+ */
+function buildACASubsidyNote(input, grossWithdrawal) {
+  if (input.retirementAge >= MEDICARE_ELIGIBILITY_AGE) {
+    return `You're retiring at or after ${MEDICARE_ELIGIBILITY_AGE}, so there's no pre-Medicare healthcare bridge to plan for — you'll be Medicare-eligible from day one of retirement.`;
+  }
+
+  const householdSize = input.filingStatus === "married" ? 2 : 1;
+  const stateInfo = STATE_DATA[input.stateCode];
+  const benchmarkPremium = estimateAnnualHealthcarePremium(input.retirementAge, stateInfo, input.monthlyPremiumAt40 || 0);
+  const result = estimateACASubsidy(grossWithdrawal, householdSize, benchmarkPremium);
+  const fpl = acaFederalPovertyLevel(householdSize);
+
+  if (result.status === "likely-medicaid") {
+    return `At your projected ${currency(grossWithdrawal)}/yr income (roughly ${Math.round(result.fplPct)}% of the federal poverty level for your household size), you'd likely qualify for Medicaid instead of marketplace coverage in most states — though 12 states haven't expanded Medicaid, where coverage below this income level works differently. Worth checking your specific state's rules.`;
+  }
+  if (result.status === "above-cliff") {
+    return `At your projected ${currency(grossWithdrawal)}/yr income, you're above 400% of the federal poverty level (${currency(fpl)} for your household size) — the "subsidy cliff" that returned for 2026 coverage after the enhanced pandemic-era subsidies expired. Above that line, you get no premium tax credit at all regardless of cost, so the full unsubsidized premium shown above is likely accurate, not conservative. Keeping bridge-year income under the cliff (e.g. via smaller Roth conversions those specific years) is worth weighing against the tax benefit of converting more.`;
+  }
+  return `At your projected ${currency(grossWithdrawal)}/yr income (roughly ${Math.round(result.fplPct)}% of the federal poverty level for your household size), you'd likely qualify for a premium tax credit worth roughly ${currency(result.subsidy)}/yr — bringing your estimated bridge-year premium down to about ${currency(result.subsidizedPremium)}/yr instead of the full ${currency(benchmarkPremium)}/yr shown above. This is exactly the kind of low-income window worth protecting — a large Roth conversion in the same year would raise your MAGI and could shrink or eliminate this subsidy.`;
+}
