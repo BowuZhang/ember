@@ -522,6 +522,12 @@
           <button type="button" id="run-montecarlo-btn" class="secondary-btn">Run Monte Carlo simulation</button>
           <p id="montecarlo-result" class="status-ok" hidden></p>
           <div id="montecarlo-chart-container" class="chart-container"></div>
+          <div id="montecarlo-diagnosis" class="strategy-block" hidden></div>
+          <div id="montecarlo-levers" class="strategy-block" hidden>
+            <h4>Ways to improve your odds</h4>
+            <p class="panel-intro" id="montecarlo-levers-loading" hidden>Checking a couple of adjustments…</p>
+            <ul id="montecarlo-levers-list" class="plain-list"></ul>
+          </div>
         </div>
       </section>
 
@@ -624,7 +630,8 @@
         <div id="personalized-tax-content" hidden>
           <div id="roth-conversion-strategy" class="strategy-block"></div>
           <div id="state-tax-strategy" class="strategy-block"></div>
-          <p class="disclaimer">Educational information based on simplified assumptions, not tax advice. Roth conversions interact with ACA subsidies, Medicare IRMAA surcharges, and state residency rules in ways worth reviewing with a professional before a big conversion year.</p>
+          <div id="high-income-impact" class="strategy-block"></div>
+          <p class="disclaimer">Educational information based on simplified assumptions, not tax advice. Roth conversions interact with ACA subsidies, Medicare IRMAA surcharges, and state residency rules in ways worth reviewing with a professional before a big conversion year. IRMAA, NIIT, and Social Security taxation estimates use your projected gross withdrawal as a rough stand-in for MAGI — actual MAGI depends on your account mix and timing.</p>
         </div>
       </section>
 
@@ -681,6 +688,7 @@
   <script src="js/family.js"></script>
   <script src="js/mortgage.js"></script>
   <script src="js/healthcare.js"></script>
+  <script src="js/highincome.js"></script>
   <script src="js/socialsecurity.js"></script>
   <script src="js/montecarlo.js"></script>
   <script src="js/timeline.js"></script>

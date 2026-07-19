@@ -211,6 +211,8 @@ function renderStrategyComparisonTable(allResults) {
 
 let lastInput = null;
 let lastAdjustments = null;
+let lastResult = null;
+let lastSSPlan = null;
 
 function render(input) {
   const familyInput = readFamilyInputs(input.currentAge);
@@ -237,6 +239,8 @@ function render(input) {
   lastAdjustments = adjustments;
 
   const result = runProjection(input, adjustments);
+  lastResult = result;
+  lastSSPlan = ssPlan;
   const fireType = classifyFireType(input, result);
   const computedFireKey = FIRE_TYPE_KEY_BY_LABEL[fireType.label] || "traditional";
 
@@ -396,9 +400,14 @@ function renderTaxPersonalization() {
   const cta = document.getElementById("personalized-tax-cta");
   const content = document.getElementById("personalized-tax-content");
   if (!cta || !content) return;
-  if (lastInput) {
+  if (lastInput && lastResult) {
     document.getElementById("roth-conversion-strategy").innerHTML = buildRothConversionStrategy(lastInput);
     document.getElementById("state-tax-strategy").innerHTML = buildStateTaxStrategy(lastInput);
+    document.getElementById("high-income-impact").innerHTML = buildHighIncomeImpact(
+      lastInput,
+      lastResult.grossAnnualWithdrawal,
+      lastSSPlan ? lastSSPlan.annualBenefit : 0
+    );
     cta.hidden = true;
     content.hidden = false;
   } else {
@@ -645,14 +654,63 @@ document.getElementById("run-montecarlo-btn").addEventListener("click", () => {
   if (!lastInput) return;
   const btn = document.getElementById("run-montecarlo-btn");
   const resultEl = document.getElementById("montecarlo-result");
+  const diagnosisEl = document.getElementById("montecarlo-diagnosis");
+  const leversEl = document.getElementById("montecarlo-levers");
+  const leversLoadingEl = document.getElementById("montecarlo-levers-loading");
+  const leversListEl = document.getElementById("montecarlo-levers-list");
   btn.disabled = true;
   btn.textContent = "Running…";
+  diagnosisEl.hidden = true;
+  leversEl.hidden = true;
+  leversListEl.innerHTML = "";
   setTimeout(() => {
     const mc = runMonteCarloSimulation(lastInput, lastAdjustments);
     resultEl.hidden = false;
     resultEl.textContent = `${Math.round(mc.successRate * 100)}% of ${mc.numSimulations} simulated markets never ran out of money by age ${MAX_PLANNING_AGE}.`;
     resultEl.className = mc.successRate >= 0.8 ? "status-ok" : "status-warn";
     renderMonteCarloFanChart(document.getElementById("montecarlo-chart-container"), mc.bands, lastInput.retirementAge);
+
+    // --- Sequence-of-returns diagnosis ---
+    const diagnosis = diagnoseSequenceRisk(mc.bands, lastInput.retirementAge);
+    if (diagnosis.earlyRisk) {
+      diagnosisEl.hidden = false;
+      diagnosisEl.innerHTML = `
+        <h4>Your riskiest years are early</h4>
+        <p>The worst-case paths run out of money within the first decade of retirement — a bad market right after you stop working does outsized damage, since you're withdrawing from a shrinking base with no time for it to recover before the drawdown really starts (sequence-of-returns risk). Two common responses: keep 1–2 years of spending in cash or short-term bonds specifically to avoid selling into an early downturn, or build in flexibility to trim spending in a genuinely bad year rather than withdrawing a fixed amount regardless of the market.</p>
+      `;
+    } else if (diagnosis.laterRisk) {
+      diagnosisEl.hidden = false;
+      diagnosisEl.innerHTML = `
+        <h4>Your risk builds up over time</h4>
+        <p>The worst-case paths don't fail early — they run low later in retirement, which points more toward "not quite enough saved" than a bad-timing problem. The levers below (working longer or spending less) tend to help more directly here than a cash buffer would.</p>
+      `;
+    }
+
+    // --- Quantified levers, only when there's real room to improve ---
+    // Uses a shared seed and matched simulation count for the comparison
+    // baseline and every lever, so each pair of runs sees the same
+    // simulated markets — otherwise a lever that should strictly help
+    // (like retiring later) could occasionally show a "worse" result from
+    // pure sampling noise between two independent random runs.
+    if (mc.successRate < 0.9) {
+      leversEl.hidden = false;
+      leversLoadingEl.hidden = false;
+      setTimeout(() => {
+        const LEVER_SIMULATIONS = 250;
+        const seed = Math.floor(Math.random() * 2 ** 31);
+        const comparisonBaseline = runMonteCarloSimulation(lastInput, lastAdjustments, LEVER_SIMULATIONS, seed);
+        const levers = computeMonteCarloLevers(lastInput, lastAdjustments, seed);
+        leversLoadingEl.hidden = true;
+        leversListEl.innerHTML = levers
+          .map((l) => {
+            const delta = Math.round((l.successRate - comparisonBaseline.successRate) * 100);
+            const deltaText = delta > 0 ? `+${delta} points` : `${delta} points`;
+            return `<li>${l.label}: <strong>${Math.round(l.successRate * 100)}% success</strong> (${deltaText})</li>`;
+          })
+          .join("");
+      }, 30);
+    }
+
     btn.disabled = false;
     btn.textContent = "Run Monte Carlo simulation";
   }, 30);

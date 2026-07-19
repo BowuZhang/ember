@@ -320,3 +320,47 @@ function buildStateTaxStrategy(input) {
     <p>${relocationNote}</p>
   `;
 }
+
+/**
+ * Three "stealth" cliffs that specifically hit higher-income retirees:
+ * IRMAA Medicare surcharges, the Net Investment Income Tax, and Social
+ * Security benefit taxation. Uses the calculator's projected gross
+ * withdrawal as a MAGI stand-in — see the disclaimer rendered alongside
+ * this in the UI.
+ */
+function buildHighIncomeImpact(input, grossWithdrawal, ssBenefit) {
+  const magi = grossWithdrawal;
+  const filingStatus = input.filingStatus;
+
+  const irmaa = estimateIRMAA(magi, filingStatus);
+  const irmaaThreshold = IRMAA_BRACKETS[filingStatus][0].upTo;
+  const irmaaText = irmaa.triggered
+    ? `At your projected ${currency(magi)}/yr gross withdrawal, you'd likely land in an IRMAA surcharge tier once on Medicare (65+) — adding roughly ${currency(irmaa.annualSurcharge)}/yr (${currency(irmaa.monthlySurcharge)}/mo) on top of standard Part B and Part D premiums. IRMAA looks back two years, so it's your income two years before turning 65 (or any year after) that counts — a large one-time event like a big Roth conversion or asset sale can trigger it even in an otherwise low-income year.`
+    : `At your projected ${currency(magi)}/yr gross withdrawal, you're under the ${currency(irmaaThreshold)} IRMAA threshold — standard Medicare premiums should apply once you're eligible at 65. Still worth watching in any year your income spikes, since IRMAA looks back two years and applies for the full year even if you cross by $1.`;
+
+  const niit = estimateNIIT(magi, magi, filingStatus);
+  const niitThreshold = NIIT_THRESHOLD[filingStatus];
+  const niitText = niit.triggered
+    ? `Your projected income is also above the ${currency(niitThreshold)} NIIT threshold, which adds a 3.8% federal surtax on investment income above that line — roughly ${currency(niit.annualTax)}/yr at your numbers. This threshold hasn't been adjusted for inflation since 2013, so more retirees cross it every year without any real income increase.`
+    : `Your projected income is under the ${currency(niitThreshold)} NIIT threshold, so the 3.8% investment-income surtax likely won't apply — though a one-time spike (a home sale, a large Roth conversion) in a single year could push you over it.`;
+
+  const ssTierLabel = SS_TAX_THRESHOLDS[filingStatus];
+  let ssText;
+  if (ssBenefit > 0) {
+    const otherIncome = Math.max(0, grossWithdrawal - ssBenefit);
+    const ssTax = estimateTaxableSocialSecurity(otherIncome, ssBenefit, filingStatus);
+    ssText =
+      ssTax.taxablePct > 0
+        ? `Based on your other income, roughly ${Math.round(ssTax.taxablePct * 100)}% of your Social Security benefit would likely be taxable — up to 85% becomes taxable once combined income (other income plus half your benefit) passes ${currency(ssTierLabel.tier2)}. These thresholds have been fixed since 1984 and were never indexed for inflation, so this catches more retirees every year.`
+        : `Based on your other income, your Social Security benefit likely stays untaxed — your combined income (other income plus half your benefit) is under the ${currency(ssTierLabel.tier1)} threshold where taxation starts.`;
+  } else {
+    ssText = `Add your estimated income above (in the Social Security section) to see how benefit taxation would apply once you claim.`;
+  }
+
+  return `
+    <h4>High-income impact: Medicare & taxes</h4>
+    <p>${irmaaText}</p>
+    <p>${niitText}</p>
+    <p>${ssText}</p>
+  `;
+}
