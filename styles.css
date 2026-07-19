@@ -12,6 +12,18 @@
   --ok: #1f7a5c;
   --recommend: #c08a2e;
   --recommend-soft: #fbf1de;
+  --strategy-tax: #7d56a8;
+  --strategy-tax-soft: rgba(125, 86, 168, 0.08);
+  --strategy-state: #2f6fb0;
+  --strategy-state-soft: rgba(47, 111, 176, 0.08);
+  --strategy-income: #a4780f;
+  --strategy-income-soft: rgba(164, 120, 15, 0.08);
+  --strategy-healthcare: #c2437a;
+  --strategy-healthcare-soft: rgba(194, 67, 122, 0.08);
+  --strategy-risk: #b3541e;
+  --strategy-risk-soft: rgba(179, 84, 30, 0.08);
+  --strategy-action: #1f7a5c;
+  --strategy-action-soft: rgba(31, 122, 92, 0.08);
   --font-body: 'Segoe UI', system-ui, sans-serif;
   --font-heading: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
 }
@@ -105,6 +117,97 @@ h1, h2, h3, h4 {
 .topnav-link:disabled {
   color: #b6c0be;
   cursor: default;
+}
+
+.calc-quicknav {
+  position: sticky;
+  top: var(--quicknav-top, 57px);
+  z-index: 9;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.6rem 1.5rem;
+  margin: 0 0 1.5rem;
+  background: rgba(244, 247, 246, 0.92);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+
+.calc-quicknav::-webkit-scrollbar {
+  display: none;
+}
+
+.calc-quicknav button {
+  flex: 0 0 auto;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.calc-quicknav button:hover {
+  background: #eef6f2;
+  color: var(--accent-dark);
+  border-color: var(--accent);
+}
+
+.calc-quicknav button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.first-time-hint[hidden] {
+  display: none;
+}
+
+.first-time-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  max-width: 900px;
+  background: var(--recommend-soft);
+  border: 1px solid var(--recommend);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 1rem auto 0;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+
+@media (max-width: 932px) {
+  .first-time-hint { margin: 1rem 1.5rem 0; max-width: none; }
+}
+
+.first-time-hint p {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.first-time-hint strong {
+  color: var(--accent-dark);
+}
+
+.first-time-hint button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--muted);
+  padding: 0 0.2rem;
+  flex-shrink: 0;
+}
+
+.first-time-hint button:hover {
+  color: var(--text);
 }
 
 .home-menu {
@@ -454,8 +557,10 @@ main {
 }
 
 .strategy-block {
-  background: var(--accent-soft, rgba(31, 122, 92, 0.08));
-  border-left: 3px solid var(--accent);
+  --strategy-color: var(--accent);
+  --strategy-soft: var(--accent-soft, rgba(31, 122, 92, 0.08));
+  background: var(--strategy-soft);
+  border-left: 3px solid var(--strategy-color);
   border-radius: 4px;
   padding: 0.9rem 1.1rem;
   margin-bottom: 1rem;
@@ -466,7 +571,7 @@ main {
 }
 
 .strategy-block h4 {
-  color: var(--accent-dark);
+  color: color-mix(in srgb, var(--strategy-color) 75%, black);
   margin-bottom: 0.5rem;
 }
 
@@ -478,6 +583,26 @@ main {
 .strategy-block p:last-child {
   margin-bottom: 0;
 }
+
+.strategy-tag {
+  display: inline-block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--strategy-color);
+  background: color-mix(in srgb, var(--strategy-color) 14%, white);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  margin-bottom: 0.55rem;
+}
+
+.strategy-block--tax { --strategy-color: var(--strategy-tax); --strategy-soft: var(--strategy-tax-soft); }
+.strategy-block--state { --strategy-color: var(--strategy-state); --strategy-soft: var(--strategy-state-soft); }
+.strategy-block--income { --strategy-color: var(--strategy-income); --strategy-soft: var(--strategy-income-soft); }
+.strategy-block--healthcare { --strategy-color: var(--strategy-healthcare); --strategy-soft: var(--strategy-healthcare-soft); }
+.strategy-block--risk { --strategy-color: var(--strategy-risk); --strategy-soft: var(--strategy-risk-soft); }
+.strategy-block--action { --strategy-color: var(--strategy-action); --strategy-soft: var(--strategy-action-soft); }
 
 .link-btn {
   background: none;
@@ -1048,6 +1173,8 @@ input:focus, select:focus {
 @media (max-width: 600px) {
   .page-header h1 { font-size: 1.9rem; }
   .panel { padding: 1.25rem; }
+  .calc-quicknav { padding: 0.5rem 1rem; gap: 0.4rem; }
+  .calc-quicknav button { padding: 0.4rem 0.8rem; font-size: 0.78rem; }
 
   .card-label, .card-note { font-size: 0.85rem; }
   .disclaimer { font-size: 0.85rem; }

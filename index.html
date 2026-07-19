@@ -77,6 +77,24 @@
       <p class="tagline">Retirement &amp; FIRE Planner</p>
     </header>
 
+    <nav class="calc-quicknav no-print" id="calc-quicknav" aria-label="Jump to section">
+      <button type="button" data-jump="panel-numbers">Numbers</button>
+      <button type="button" data-jump="panel-results">Your plan</button>
+      <button type="button" data-jump="panel-timeline">Timeline</button>
+      <button type="button" data-jump="panel-state">State</button>
+      <button type="button" data-jump="panel-taxdeepdive">Tax deep-dive</button>
+      <button type="button" data-jump="panel-fire-plan">FIRE plan</button>
+      <button type="button" data-jump="panel-family">Family</button>
+      <button type="button" data-jump="panel-housing">Housing &amp; healthcare</button>
+      <button type="button" data-jump="panel-montecarlo">Risk analysis</button>
+      <button type="button" data-jump="panel-scenarios">Scenarios</button>
+    </nav>
+
+    <div class="first-time-hint no-print" id="first-time-hint" hidden>
+      <p>New here? Sections marked <strong>Advanced</strong> or <strong>Optional</strong> start collapsed to keep things simple. Expand what's useful — we'll remember your choices next visit.</p>
+      <button type="button" id="dismiss-hint-btn" aria-label="Dismiss tip">&times;</button>
+    </div>
+
     <main>
       <section class="panel" id="panel-numbers">
         <button class="panel-toggle" aria-expanded="true" aria-controls="panel-numbers-body">
@@ -524,7 +542,7 @@
               <span class="input-tip" hidden>A benchmark premium at age 40, scaled up for age and your state's cost of living to estimate your actual bridge cost.</span>
             </label>
           </div>
-          <div id="aca-subsidy-note" class="strategy-block" hidden></div>
+          <div id="aca-subsidy-note" class="strategy-block strategy-block--healthcare" hidden></div>
         </div>
       </section>
 
@@ -538,8 +556,9 @@
           <button type="button" id="run-montecarlo-btn" class="secondary-btn">Run Monte Carlo simulation</button>
           <p id="montecarlo-result" class="status-ok" hidden></p>
           <div id="montecarlo-chart-container" class="chart-container"></div>
-          <div id="montecarlo-diagnosis" class="strategy-block" hidden></div>
-          <div id="montecarlo-levers" class="strategy-block" hidden>
+          <div id="montecarlo-diagnosis" class="strategy-block strategy-block--risk" hidden></div>
+          <div id="montecarlo-levers" class="strategy-block strategy-block--action" hidden>
+            <span class="strategy-tag">Action plan</span>
             <h4>Ways to improve your odds</h4>
             <p class="panel-intro" id="montecarlo-levers-loading" hidden>Checking a couple of adjustments…</p>
             <ul id="montecarlo-levers-list" class="plain-list"></ul>
@@ -644,9 +663,9 @@
         <h2>Your personalized tax strategy</h2>
         <p id="personalized-tax-cta" class="panel-intro">Fill in the calculator to see a Roth-conversion and state-tax strategy tailored to your retirement age and state.</p>
         <div id="personalized-tax-content" hidden>
-          <div id="roth-conversion-strategy" class="strategy-block"></div>
-          <div id="state-tax-strategy" class="strategy-block"></div>
-          <div id="high-income-impact" class="strategy-block"></div>
+          <div id="roth-conversion-strategy" class="strategy-block strategy-block--tax"></div>
+          <div id="state-tax-strategy" class="strategy-block strategy-block--state"></div>
+          <div id="high-income-impact" class="strategy-block strategy-block--income"></div>
           <p class="disclaimer">Educational information based on simplified assumptions, not tax advice. Roth conversions interact with ACA subsidies, Medicare IRMAA surcharges, and state residency rules in ways worth reviewing with a professional before a big conversion year. IRMAA, NIIT, and Social Security taxation estimates use your projected gross withdrawal as a rough stand-in for MAGI — actual MAGI depends on your account mix and timing.</p>
         </div>
       </section>

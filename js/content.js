@@ -297,6 +297,7 @@ function buildRothConversionStrategy(input) {
   const ceilingNote = `A common rule of thumb: convert enough each year to fill up to the top of the 12% federal bracket without going higher — for ${filingLabel}, that's roughly ${currency(suggestedCeiling)} of total taxable income (standard deduction plus bracket room) in today's dollars. Other income that year changes this number — treat it as a starting point, not a target to hit exactly.`;
 
   return `
+    <span class="strategy-tag">Tax timing</span>
     <h4>Your Roth conversion window</h4>
     <p>${windowText}</p>
     <p>${ladderNote}</p>
@@ -315,6 +316,7 @@ function buildStateTaxStrategy(input) {
   const ssNote = stateInfo.taxesSocialSecurity ? ` ${stateInfo.name} also taxes Social Security benefits, which is worth factoring in once you start claiming.` : "";
   const relocationNote = `If relocating to a lower- or no-tax state in retirement is on the table, timing large conversions to happen after you've established residency there — not before — can meaningfully cut the state tax bill on the conversion. State tax residency is usually based on where you physically live and intend to stay, not just a mailing address, so confirm the specifics with a professional before a big conversion year.`;
   return `
+    <span class="strategy-tag">State tax</span>
     <h4>State tax considerations</h4>
     <p>${rateNote}${ssNote}</p>
     <p>${relocationNote}</p>
@@ -358,6 +360,7 @@ function buildHighIncomeImpact(input, grossWithdrawal, ssBenefit) {
   }
 
   return `
+    <span class="strategy-tag">Medicare &amp; taxes</span>
     <h4>High-income impact: Medicare & taxes</h4>
     <p>${irmaaText}</p>
     <p>${niitText}</p>

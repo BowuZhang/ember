@@ -300,7 +300,7 @@ function render(input) {
 
   // --- ACA subsidy estimate for the healthcare bridge ---
   const acaNoteEl = document.getElementById("aca-subsidy-note");
-  acaNoteEl.innerHTML = `<h4>Would you qualify for ACA subsidies?</h4><p>${buildACASubsidyNote(input, result.grossAnnualWithdrawal)}</p>`;
+  acaNoteEl.innerHTML = `<span class="strategy-tag">Healthcare bridge</span><h4>Would you qualify for ACA subsidies?</h4><p>${buildACASubsidyNote(input, result.grossAnnualWithdrawal)}</p>`;
   acaNoteEl.hidden = false;
 
   const fireType = classifyFireType(input, result);
@@ -634,6 +634,7 @@ function openPanel(panelId) {
   if (toggle && body && toggle.getAttribute("aria-expanded") !== "true") {
     toggle.setAttribute("aria-expanded", "true");
     body.hidden = false;
+    savePanelState();
   }
 }
 
@@ -643,7 +644,63 @@ document.querySelectorAll(".panel-toggle").forEach((btn) => {
     const expanded = btn.getAttribute("aria-expanded") === "true";
     btn.setAttribute("aria-expanded", String(!expanded));
     body.hidden = expanded;
+    savePanelState();
   });
+});
+
+// --- Panel density: remember a returning visitor's expand/collapse choices ---
+
+const PANEL_STATE_STORAGE_KEY = "ember-panel-state";
+const HINT_DISMISSED_STORAGE_KEY = "ember-hint-dismissed";
+
+function savePanelState() {
+  try {
+    const state = {};
+    document.querySelectorAll("#view-calculator .panel-toggle").forEach((btn) => {
+      state[btn.getAttribute("aria-controls")] = btn.getAttribute("aria-expanded") === "true";
+    });
+    localStorage.setItem(PANEL_STATE_STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    // localStorage unavailable — fail silently
+  }
+}
+
+function restorePanelState() {
+  const returningVisitor = !!loadLastPlan();
+  if (!returningVisitor) {
+    const hintEl = document.getElementById("first-time-hint");
+    let dismissed = false;
+    try {
+      dismissed = !!localStorage.getItem(HINT_DISMISSED_STORAGE_KEY);
+    } catch (e) {
+      dismissed = false;
+    }
+    if (hintEl && !dismissed) hintEl.hidden = false;
+    return;
+  }
+  try {
+    const raw = localStorage.getItem(PANEL_STATE_STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    Object.entries(state).forEach(([bodyId, expanded]) => {
+      const body = document.getElementById(bodyId);
+      const toggle = document.querySelector(`.panel-toggle[aria-controls="${bodyId}"]`);
+      if (!body || !toggle) return;
+      toggle.setAttribute("aria-expanded", String(expanded));
+      body.hidden = !expanded;
+    });
+  } catch (e) {
+    // ignore malformed saved state
+  }
+}
+
+document.getElementById("dismiss-hint-btn").addEventListener("click", () => {
+  document.getElementById("first-time-hint").hidden = true;
+  try {
+    localStorage.setItem(HINT_DISMISSED_STORAGE_KEY, "1");
+  } catch (e) {
+    // localStorage unavailable — fail silently
+  }
 });
 
 let resizeTimer = null;
@@ -652,8 +709,48 @@ window.addEventListener("resize", () => {
   resizeTimer = setTimeout(() => {
     if (hasCalculated) render(readInputs());
     renderStaticContent();
+    syncQuicknavOffset();
   }, 150);
 });
+
+// --- Calculator quick-nav ---
+
+function syncQuicknavOffset() {
+  const topnav = document.querySelector(".topnav");
+  const quicknav = document.getElementById("calc-quicknav");
+  if (!topnav || !quicknav) return;
+  quicknav.style.setProperty("--quicknav-top", `${topnav.getBoundingClientRect().height}px`);
+}
+
+const quicknavButtons = document.querySelectorAll("#calc-quicknav [data-jump]");
+quicknavButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const panelId = btn.getAttribute("data-jump");
+    openPanel(panelId);
+    document.getElementById(panelId).scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
+if ("IntersectionObserver" in window) {
+  const quicknavObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const btn = document.querySelector(`#calc-quicknav [data-jump="${entry.target.id}"]`);
+        if (!btn) return;
+        quicknavButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    },
+    { rootMargin: "-45% 0px -50% 0px" }
+  );
+  quicknavButtons.forEach((btn) => {
+    const panel = document.getElementById(btn.getAttribute("data-jump"));
+    if (panel) quicknavObserver.observe(panel);
+  });
+}
+
+syncQuicknavOffset();
 
 // --- Personalized home-page summary ---
 
@@ -790,12 +887,14 @@ document.getElementById("run-montecarlo-btn").addEventListener("click", () => {
     if (diagnosis.earlyRisk) {
       diagnosisEl.hidden = false;
       diagnosisEl.innerHTML = `
+        <span class="strategy-tag">Risk diagnosis</span>
         <h4>Your riskiest years are early</h4>
         <p>The worst-case paths run out of money within the first decade of retirement — a bad market right after you stop working does outsized damage, since you're withdrawing from a shrinking base with no time for it to recover before the drawdown really starts (sequence-of-returns risk). Two common responses: keep 1–2 years of spending in cash or short-term bonds specifically to avoid selling into an early downturn, or build in flexibility to trim spending in a genuinely bad year rather than withdrawing a fixed amount regardless of the market.</p>
       `;
     } else if (diagnosis.laterRisk) {
       diagnosisEl.hidden = false;
       diagnosisEl.innerHTML = `
+        <span class="strategy-tag">Risk diagnosis</span>
         <h4>Your risk builds up over time</h4>
         <p>The worst-case paths don't fail early — they run low later in retirement, which points more toward "not quite enough saved" than a bad-timing problem. The levers below (working longer or spending less) tend to help more directly here than a cash buffer would.</p>
       `;
@@ -1293,3 +1392,4 @@ const initialView = parseInitialHash();
 attemptRender(false);
 showView(initialView);
 maybeAutoDetectState();
+restorePanelState();
