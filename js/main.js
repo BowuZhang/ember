@@ -66,11 +66,27 @@ function readFamilyInputs(currentAge) {
   };
 }
 
-function readSocialSecurityInputs() {
-  return {
+function readSocialSecurityInputs(currentAge, filingStatus) {
+  const input = {
+    currentAge,
     annualIncomeEstimate: parseCurrency(document.getElementById("ss-income").value),
     claimAge: Number(document.getElementById("ss-claim-age").value),
   };
+  if (filingStatus === "married") {
+    const spouseAgeValue = document.getElementById("spouse-current-age").value;
+    if (spouseAgeValue) {
+      input.spouse = {
+        currentAge: Number(spouseAgeValue),
+        annualIncomeEstimate: parseCurrency(document.getElementById("spouse-ss-income").value),
+        claimAge: Number(document.getElementById("spouse-ss-claim-age").value),
+      };
+    }
+  }
+  return input;
+}
+
+function syncSpouseFieldsVisibility(filingStatus) {
+  document.getElementById("spouse-ss-fields").hidden = filingStatus !== "married";
 }
 
 function readMortgageInputs(currentAge) {
@@ -250,6 +266,57 @@ function renderYearByYearTable(result) {
   document.getElementById("year-by-year-body").innerHTML = rows;
 }
 
+/**
+ * Checks whether the selected withdrawal-order strategy already withdraws
+ * enough from Traditional accounts to satisfy IRS Required Minimum
+ * Distributions once the user reaches RMD age — a "taxable-first" or
+ * heavily Roth/taxable-weighted strategy can leave Traditional too large,
+ * forcing bigger mandatory (and unplanned) taxable withdrawals later.
+ */
+function renderRMDSection(input, selectedResult) {
+  const calloutEl = document.getElementById("rmd-callout");
+  const tableWrapEl = document.getElementById("rmd-table-wrap");
+  const startAge = rmdStartAge(input.currentAge);
+  const projection = buildRMDProjection(selectedResult.rows, startAge, selectedResult.traditionalBalanceAtRetirement);
+
+  if (projection.length === 0) {
+    calloutEl.hidden = true;
+    tableWrapEl.hidden = true;
+    return;
+  }
+
+  const totalShortfall = projection.reduce((sum, p) => sum + p.shortfall, 0);
+  const firstShortfallYear = projection.find((p) => p.shortfall > 10);
+
+  const calloutText = firstShortfallYear
+    ? `Starting around age ${firstShortfallYear.age}, your selected strategy withdraws less from Traditional accounts than the IRS requires — by roughly ${currency(
+        firstShortfallYear.shortfall
+      )} that year, and ${currency(totalShortfall)} in total shortfall across the years shown below. The IRS forces the withdrawal (and its tax bill) regardless, so real taxes in those years would run higher than the "Your strategy withdraws" simulation above shows — worth revisiting your account split or withdrawal order so Traditional draws down faster before RMD age.`
+    : `Good news — your selected strategy already withdraws at least as much from Traditional accounts as the IRS requires in every projected year, so RMDs shouldn't force any surprise extra withdrawals.`;
+
+  calloutEl.innerHTML = `
+    <span class="strategy-tag">RMD check</span>
+    <h4>Required Minimum Distributions start at age ${startAge}</h4>
+    <p>${calloutText}</p>
+    <p class="disclaimer">Based on the IRS Uniform Lifetime Table, applied to your Traditional-bucket balance path under the strategy selected above. Assumes you don't have a spouse more than 10 years younger as your sole IRA beneficiary (which would use a different table) and doesn't model qualified charitable distributions.</p>
+  `;
+  calloutEl.hidden = false;
+
+  document.getElementById("rmd-table-body").innerHTML = projection
+    .map(
+      (p) => `
+      <tr${p.shortfall > 10 ? ' class="status-warn-row"' : ""}>
+        <td>${p.age}</td>
+        <td>${currency(p.requiredRMD)}</td>
+        <td>${currency(p.actualWithdrawal)}</td>
+        <td>${p.shortfall > 10 ? currency(p.shortfall) : "—"}</td>
+      </tr>
+    `
+    )
+    .join("");
+  tableWrapEl.hidden = false;
+}
+
 function renderStrategyComparisonTable(allResults) {
   document.getElementById("strategy-comparison-body").innerHTML = allResults
     .map(
@@ -265,12 +332,60 @@ function renderStrategyComparisonTable(allResults) {
     .join("");
 }
 
+/**
+ * Compares the household's currently-selected Social Security claiming ages
+ * against the combination that maximizes total household lifetime benefit,
+ * and surfaces the gap when it's large enough to matter.
+ */
+function renderHouseholdSocialSecurityStrategy(ssInput) {
+  const el = document.getElementById("household-ss-strategy");
+  const spouse = ssInput.spouse;
+  if (!spouse || !(ssInput.annualIncomeEstimate > 0 || spouse.annualIncomeEstimate > 0)) {
+    el.hidden = true;
+    return;
+  }
+
+  const strategy = optimizeHouseholdClaimingStrategy(
+    ssInput.annualIncomeEstimate || 0,
+    ssInput.claimAge,
+    spouse.annualIncomeEstimate || 0,
+    spouse.claimAge
+  );
+
+  const gap = strategy.best.total - strategy.current.total;
+  const survivorNote = strategy.higherEarnerIsPrimary
+    ? "As the higher earner, delaying tends to help your household most — the benefit you lock in also becomes your spouse's survivor benefit if you pass away first, so it's often worth prioritizing even when the pure lifetime-total math is close between combinations."
+    : "As the higher earner, your spouse delaying tends to help your household most — the benefit they lock in also becomes your survivor benefit if they pass away first, so it's often worth prioritizing even when the pure lifetime-total math is close between combinations.";
+
+  let gapText;
+  if (gap < 1000) {
+    gapText = `Your current claiming ages (you at ${ssInput.claimAge}, spouse at ${spouse.claimAge}) already look close to household-optimal given these numbers.`;
+  } else {
+    gapText = `Your current claiming ages (you at ${ssInput.claimAge}, spouse at ${spouse.claimAge}) total roughly ${currency(
+      strategy.current.total
+    )} over both your lifetimes (through age ${MAX_PLANNING_AGE} each). Claiming at ${strategy.best.primaryClaimAge} (you) and ${
+      strategy.best.spouseClaimAge
+    } (spouse) instead is projected to total about ${currency(strategy.best.total)} — roughly ${currency(gap)} more.`;
+  }
+
+  el.innerHTML = `
+    <span class="strategy-tag">Household strategy</span>
+    <h4>Coordinating your claiming ages</h4>
+    <p>${gapText}</p>
+    <p>${survivorNote}</p>
+    <p class="disclaimer">Simplified estimate: assumes both incomes are steady stand-ins for career-average earnings, ignores deemed-filing timing rules, and compares undiscounted totals to age ${MAX_PLANNING_AGE} for each spouse rather than actual life expectancy.</p>
+  `;
+  el.hidden = false;
+}
+
 let lastInput = null;
 let lastAdjustments = null;
 let lastResult = null;
 let lastSSPlan = null;
 
 function render(input) {
+  syncSpouseFieldsVisibility(input.filingStatus);
+
   const familyInput = readFamilyInputs(input.currentAge);
   const familyPlan = buildFamilyPlan(familyInput);
 
@@ -280,7 +395,7 @@ function render(input) {
   const healthcareInput = readHealthcareInputs(input.retirementAge, input.stateCode);
   const healthcarePlan = buildHealthcarePlan(healthcareInput);
 
-  const ssInput = readSocialSecurityInputs();
+  const ssInput = readSocialSecurityInputs(input.currentAge, input.filingStatus);
   const ssPlan = buildSocialSecurityPlan(ssInput);
 
   const adjustments = {
@@ -316,6 +431,8 @@ function render(input) {
     ssBenefitEl.textContent = "—";
     ssBenefitNoteEl.textContent = "Add your income above to estimate";
   }
+
+  renderHouseholdSocialSecurityStrategy(ssInput);
 
   // --- Your Plan ---
   document.getElementById("fire-number").textContent = currency(result.fireNumber);
@@ -391,6 +508,8 @@ function render(input) {
   const allStrategyResults = compareWithdrawalStrategies(strategyInput, split, adjustments);
   renderStrategyComparisonTable(allStrategyResults);
   renderStrategyComparisonChart(document.getElementById("strategy-chart-container"), allStrategyResults, input.retirementAge);
+
+  renderRMDSection(input, selectedResult);
 
   // --- FIRE Plan ---
   renderFireTypeTabs(computedFireKey);

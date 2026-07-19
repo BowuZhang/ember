@@ -47,23 +47,127 @@ function estimateSocialSecurityAnnualBenefit(annualIncomeEstimate, claimAge) {
   return adjustPIAForClaimingAge(pia, claimAge) * 12;
 }
 
+const SPOUSAL_MAX_EARLY_MONTHS = 60; // spousal reduction window is also capped at 5 years before FRA
+
 /**
- * Builds the external-income schedule and timeline milestone for Social
- * Security, or an empty plan if no income estimate was provided.
+ * The spousal benefit reduction schedule differs slightly from the worker's
+ * own-record schedule (25/36 of 1%/mo vs. 5/9 of 1%/mo for the first 36
+ * months) per 20 CFR 404.410. Unlike a worker's own benefit, the spousal
+ * portion never grows for delaying past full retirement age — it's capped
+ * at 50% of the other spouse's PIA regardless of when that spouse claims.
+ */
+function spousalReductionFactor(claimAge) {
+  const monthsEarly = Math.max(0, Math.min(Math.round((SS_FULL_RETIREMENT_AGE - claimAge) * 12), SPOUSAL_MAX_EARLY_MONTHS));
+  const first36 = Math.min(monthsEarly, 36);
+  const remaining = monthsEarly - first36;
+  const reductionPct = first36 * (25 / 36) + remaining * (5 / 12);
+  return 1 - reductionPct / 100;
+}
+
+/**
+ * Each spouse always receives their own record's benefit first; if half of
+ * the higher earner's full PIA exceeds that, the difference is paid as a
+ * "spousal top-up" (simplified — ignores deemed-filing timing and assumes
+ * the higher earner has already filed).
+ */
+function estimateHouseholdSocialSecurity(ownPIA, otherPIA, ownClaimAge) {
+  const ownBenefit = adjustPIAForClaimingAge(ownPIA, ownClaimAge);
+  const topUpAtFRA = Math.max(0, otherPIA * 0.5 - ownPIA);
+  const topUp = topUpAtFRA * spousalReductionFactor(ownClaimAge);
+  return (ownBenefit + topUp) * 12;
+}
+
+/**
+ * Grid-searches every combination of claiming ages (62-70 each) for both
+ * spouses and returns the combination that maximizes total household
+ * lifetime benefit (each spouse's benefit runs from their own claim age to
+ * their own MAX_PLANNING_AGE), alongside the totals for whatever
+ * combination the user currently has selected.
+ */
+function optimizeHouseholdClaimingStrategy(primaryIncome, primaryClaimAge, spouseIncome, spouseClaimAge) {
+  const primaryPIA = computePIA(primaryIncome / 12);
+  const spousePIA = computePIA(spouseIncome / 12);
+
+  let best = null;
+  for (let pAge = 62; pAge <= 70; pAge++) {
+    for (let sAge = 62; sAge <= 70; sAge++) {
+      const primaryAnnual = estimateHouseholdSocialSecurity(primaryPIA, spousePIA, pAge);
+      const spouseAnnual = estimateHouseholdSocialSecurity(spousePIA, primaryPIA, sAge);
+      const primaryYears = Math.max(0, MAX_PLANNING_AGE - pAge);
+      const spouseYears = Math.max(0, MAX_PLANNING_AGE - sAge);
+      const total = primaryAnnual * primaryYears + spouseAnnual * spouseYears;
+      if (!best || total > best.total) {
+        best = { primaryClaimAge: pAge, spouseClaimAge: sAge, total, primaryAnnual, spouseAnnual };
+      }
+    }
+  }
+
+  const currentPrimaryAnnual = estimateHouseholdSocialSecurity(primaryPIA, spousePIA, primaryClaimAge);
+  const currentSpouseAnnual = estimateHouseholdSocialSecurity(spousePIA, primaryPIA, spouseClaimAge);
+  const currentTotal =
+    currentPrimaryAnnual * Math.max(0, MAX_PLANNING_AGE - primaryClaimAge) +
+    currentSpouseAnnual * Math.max(0, MAX_PLANNING_AGE - spouseClaimAge);
+
+  const higherEarnerIsPrimary = primaryPIA >= spousePIA;
+
+  return {
+    best,
+    current: { primaryClaimAge, spouseClaimAge, total: currentTotal, primaryAnnual: currentPrimaryAnnual, spouseAnnual: currentSpouseAnnual },
+    higherEarnerIsPrimary,
+  };
+}
+
+/**
+ * Builds the external-income schedule and timeline milestone(s) for Social
+ * Security, or an empty plan if no income estimate was provided. When a
+ * spouse's own income/claim age/current age are given, each spouse's
+ * benefit includes any spousal top-up (via estimateHouseholdSocialSecurity)
+ * and the spouse's income is translated onto the primary's age scale using
+ * the age gap between them, so both incomes land in the shared projection
+ * at the right (primary-relative) year.
  */
 function buildSocialSecurityPlan(input) {
-  const { annualIncomeEstimate, claimAge } = input;
-  const annualBenefit = estimateSocialSecurityAnnualBenefit(annualIncomeEstimate, claimAge);
-  if (annualBenefit <= 0) {
+  const { annualIncomeEstimate, claimAge, currentAge, spouse } = input;
+  const hasSpouse = !!spouse; // present once the user fills in the spouse's age, even with $0 own income
+
+  const primaryPIA = computePIA((annualIncomeEstimate || 0) / 12);
+  const spousePIA = hasSpouse ? computePIA((spouse.annualIncomeEstimate || 0) / 12) : 0;
+
+  const primaryAnnualBenefit = estimateHouseholdSocialSecurity(primaryPIA, spousePIA, claimAge);
+
+  if (primaryAnnualBenefit <= 0 && !hasSpouse) {
     return { externalIncomeByAge: {}, milestones: [], annualBenefit: 0 };
   }
+
   const externalIncomeByAge = {};
-  for (let age = claimAge; age <= MAX_PLANNING_AGE; age++) {
-    externalIncomeByAge[age] = annualBenefit;
+  const milestones = [];
+
+  if (primaryAnnualBenefit > 0) {
+    for (let age = claimAge; age <= MAX_PLANNING_AGE; age++) {
+      externalIncomeByAge[age] = (externalIncomeByAge[age] || 0) + primaryAnnualBenefit;
+    }
+    milestones.push({ age: claimAge, label: `Social Security starts (est. ~$${Math.round(primaryAnnualBenefit / 1000)}k/yr)` });
   }
+
+  if (hasSpouse) {
+    const spouseAnnualBenefit = estimateHouseholdSocialSecurity(spousePIA, primaryPIA, spouse.claimAge);
+    const ageGap = (spouse.currentAge || currentAge) - currentAge; // + if spouse is older
+    const primaryAgeWhenSpouseClaims = spouse.claimAge - ageGap;
+    if (spouseAnnualBenefit > 0 && primaryAgeWhenSpouseClaims <= MAX_PLANNING_AGE) {
+      const startAge = Math.max(currentAge, primaryAgeWhenSpouseClaims);
+      for (let age = startAge; age <= MAX_PLANNING_AGE; age++) {
+        externalIncomeByAge[age] = (externalIncomeByAge[age] || 0) + spouseAnnualBenefit;
+      }
+      milestones.push({
+        age: Math.round(primaryAgeWhenSpouseClaims),
+        label: `Spouse's Social Security starts (est. ~$${Math.round(spouseAnnualBenefit / 1000)}k/yr)`,
+      });
+    }
+  }
+
   return {
     externalIncomeByAge,
-    milestones: [{ age: claimAge, label: `Social Security starts (est. ~$${Math.round(annualBenefit / 1000)}k/yr)` }],
-    annualBenefit,
+    milestones,
+    annualBenefit: primaryAnnualBenefit,
   };
 }

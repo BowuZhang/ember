@@ -24,6 +24,8 @@
   --strategy-risk-soft: rgba(179, 84, 30, 0.08);
   --strategy-action: #1f7a5c;
   --strategy-action-soft: rgba(31, 122, 92, 0.08);
+  --strategy-household: #3d6fae;
+  --strategy-household-soft: rgba(61, 111, 174, 0.08);
   --font-body: 'Segoe UI', system-ui, sans-serif;
   --font-heading: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
 }
@@ -603,6 +605,15 @@ main {
 .strategy-block--healthcare { --strategy-color: var(--strategy-healthcare); --strategy-soft: var(--strategy-healthcare-soft); }
 .strategy-block--risk { --strategy-color: var(--strategy-risk); --strategy-soft: var(--strategy-risk-soft); }
 .strategy-block--action { --strategy-color: var(--strategy-action); --strategy-soft: var(--strategy-action-soft); }
+.strategy-block--household { --strategy-color: var(--strategy-household); --strategy-soft: var(--strategy-household-soft); }
+
+.spouse-ss-fields[hidden] {
+  display: none;
+}
+
+.spouse-ss-fields {
+  display: contents;
+}
 
 .link-btn {
   background: none;
@@ -768,6 +779,12 @@ input:focus, select:focus {
 .status-warn {
   background: #fdecdf;
   color: var(--warn);
+}
+
+.status-warn-row td {
+  background: #fdecdf;
+  color: var(--warn);
+  font-weight: 600;
 }
 
 .chart-container {

@@ -52,6 +52,7 @@ function simulateWithdrawalStrategy(input, split, strategyKey, adjustments) {
     buckets.roth = buckets.roth * (1 + preReturn) + annualContribution * norm.rothPct;
     buckets.taxable = buckets.taxable * (1 + preReturn) + annualContribution * norm.taxablePct - extra;
   }
+  const traditionalBalanceAtRetirement = buckets.traditional;
 
   function withdrawFromBucket(type, available, netTarget) {
     if (available <= 0 || netTarget <= 0) return { grossWithdrawn: 0, netAchieved: 0, federal: 0, state: 0 };
@@ -152,6 +153,7 @@ function simulateWithdrawalStrategy(input, split, strategyKey, adjustments) {
     lifetimeStateTax,
     lifetimeTotalTax: lifetimeFederalTax + lifetimeStateTax,
     finalBalance: rows.length ? rows[rows.length - 1].totalBalance : 0,
+    traditionalBalanceAtRetirement,
   };
 }
 
