@@ -983,6 +983,62 @@
           <span class="chevron" aria-hidden="true"></span>
         </button>
         <div class="panel-body" id="panel-goals-body" hidden>
+          <p class="panel-intro">Plan for up to four goals outside retirement — a house down payment, a wedding, a car, kids' education, anything with a target date. This is separate from the retirement calculator's savings rate; treat the total below as a second, dedicated savings target.</p>
+          <div class="table-scroll">
+            <table class="data-table goals-input-table">
+              <thead>
+                <tr><th>Goal</th><th>Target amount</th><th>Years away</th><th>Already saved</th><th>Expected return %</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" id="goal-name-1" class="lifeplan-input" placeholder="e.g. House down payment"></td>
+                  <td><input type="text" inputmode="numeric" id="goal-target-1" class="lifeplan-input currency-input" placeholder="$60,000"></td>
+                  <td><input type="number" id="goal-years-1" class="lifeplan-input" step="0.5" placeholder="5"></td>
+                  <td><input type="text" inputmode="numeric" id="goal-saved-1" class="lifeplan-input currency-input" placeholder="$10,000"></td>
+                  <td><input type="number" id="goal-return-1" class="lifeplan-input" step="0.5" placeholder="5"></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="goal-name-2" class="lifeplan-input" placeholder="e.g. Wedding"></td>
+                  <td><input type="text" inputmode="numeric" id="goal-target-2" class="lifeplan-input currency-input" placeholder="$25,000"></td>
+                  <td><input type="number" id="goal-years-2" class="lifeplan-input" step="0.5" placeholder="2"></td>
+                  <td><input type="text" inputmode="numeric" id="goal-saved-2" class="lifeplan-input currency-input" placeholder="$3,000"></td>
+                  <td><input type="number" id="goal-return-2" class="lifeplan-input" step="0.5" placeholder="3"></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="goal-name-3" class="lifeplan-input" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="goal-target-3" class="lifeplan-input currency-input" placeholder=""></td>
+                  <td><input type="number" id="goal-years-3" class="lifeplan-input" step="0.5" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="goal-saved-3" class="lifeplan-input currency-input" placeholder=""></td>
+                  <td><input type="number" id="goal-return-3" class="lifeplan-input" step="0.5" placeholder=""></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="goal-name-4" class="lifeplan-input" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="goal-target-4" class="lifeplan-input currency-input" placeholder=""></td>
+                  <td><input type="number" id="goal-years-4" class="lifeplan-input" step="0.5" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="goal-saved-4" class="lifeplan-input currency-input" placeholder=""></td>
+                  <td><input type="number" id="goal-return-4" class="lifeplan-input" step="0.5" placeholder=""></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>Goal</th><th>Required monthly savings</th></tr>
+              </thead>
+              <tbody id="goals-results-body"></tbody>
+            </table>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              <span class="label-row">Monthly amount available for these goals</span>
+              <input type="text" inputmode="numeric" id="goals-available-monthly" class="lifeplan-input currency-input" placeholder="e.g. $800">
+            </label>
+          </div>
+          <div id="goals-summary" class="strategy-block strategy-block--action" hidden></div>
+          <p class="disclaimer">Assumes level monthly contributions and a steady return — real markets are more volatile, especially for shorter-term goals, where lower-risk savings vehicles are usually more appropriate than stock-heavy investments.</p>
         </div>
       </section>
 
@@ -1011,6 +1067,7 @@
   <script src="js/strategy.js"></script>
   <script src="js/rmd.js"></script>
   <script src="js/debtpayoff.js"></script>
+  <script src="js/goals.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/content.js"></script>
   <script src="js/monetization.js"></script>

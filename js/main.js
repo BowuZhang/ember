@@ -1429,6 +1429,57 @@ function updateEstateChecklistProgress() {
   });
 }
 
+/** Reads the four fixed goal rows, ignoring any left blank/zero-target. */
+function readGoalRows() {
+  const rows = [];
+  for (let i = 1; i <= 4; i++) {
+    const targetAmount = parseCurrency(document.getElementById(`goal-target-${i}`).value);
+    if (targetAmount <= 0) continue;
+    rows.push({
+      id: `goal-${i}`,
+      name: document.getElementById(`goal-name-${i}`).value || `Goal ${i}`,
+      targetAmount,
+      yearsAway: Number(document.getElementById(`goal-years-${i}`).value) || 1,
+      currentSaved: parseCurrency(document.getElementById(`goal-saved-${i}`).value),
+      annualReturnPct: Number(document.getElementById(`goal-return-${i}`).value) || 0,
+    });
+  }
+  return rows;
+}
+
+function recomputeGoals() {
+  const goals = readGoalRows();
+  const resultsBody = document.getElementById("goals-results-body");
+  const summaryEl = document.getElementById("goals-summary");
+
+  if (goals.length === 0) {
+    resultsBody.innerHTML = "";
+    summaryEl.hidden = true;
+    return;
+  }
+
+  const summarized = summarizeGoals(goals);
+  resultsBody.innerHTML = summarized
+    .map((g) => `<tr><td>${g.name}</td><td>${currency(g.requiredMonthly)}/mo</td></tr>`)
+    .join("");
+
+  const totalRequired = summarized.reduce((sum, g) => sum + g.requiredMonthly, 0);
+  const available = parseCurrency(document.getElementById("goals-available-monthly").value);
+  const gap = totalRequired - available;
+
+  let text;
+  if (available <= 0) {
+    text = `These ${summarized.length} goal${summarized.length > 1 ? "s" : ""} need roughly ${currency(totalRequired)}/mo combined to hit their target dates. Add how much you can put toward them each month above to see if that's enough.`;
+  } else if (gap > 1) {
+    text = `These ${summarized.length} goal${summarized.length > 1 ? "s" : ""} need roughly ${currency(totalRequired)}/mo combined, but you've earmarked ${currency(available)}/mo — a shortfall of ${currency(gap)}/mo. Consider stretching the timeline on lower-priority goals, since pushing a goal's target date out reduces its required monthly savings.`;
+  } else {
+    text = `These ${summarized.length} goal${summarized.length > 1 ? "s" : ""} need roughly ${currency(totalRequired)}/mo combined, and your earmarked ${currency(available)}/mo covers it${gap < -1 ? ` with about ${currency(-gap)}/mo to spare` : ""}.`;
+  }
+
+  summaryEl.innerHTML = `<span class="strategy-tag">Goal funding</span><h4>Are you on track?</h4><p>${text}</p>`;
+  summaryEl.hidden = false;
+}
+
 renderEstateChecklist();
 
 document.querySelectorAll(".lifeplan-input").forEach((el) => {
@@ -1436,6 +1487,7 @@ document.querySelectorAll(".lifeplan-input").forEach((el) => {
     recomputeNetWorth();
     recomputeEmergencyFund();
     recomputeDebtPayoff();
+    recomputeGoals();
     saveLifePlanData();
   });
 });
@@ -1445,6 +1497,7 @@ recomputeNetWorth();
 recomputeEmergencyFund();
 recomputeDebtPayoff();
 updateEstateChecklistProgress();
+recomputeGoals();
 
 /** One-time convenience prefill from the calculator's own portfolio value — only if the field is still untouched. */
 function prefillNetWorthFromCalculator() {

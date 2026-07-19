@@ -1035,11 +1035,11 @@ input:focus, select:focus {
   text-align: left;
 }
 
-.debt-input-table td {
+.debt-input-table td, .goals-input-table td {
   padding: 0.35rem 0.5rem;
 }
 
-.debt-input-table input {
+.debt-input-table input, .goals-input-table input {
   width: 100%;
   min-width: 90px;
   padding: 0.4rem 0.5rem;
@@ -1050,7 +1050,7 @@ input:focus, select:focus {
   font-family: var(--font-body);
 }
 
-.debt-input-table td:first-child input {
+.debt-input-table td:first-child input, .goals-input-table td:first-child input {
   text-align: left;
   min-width: 130px;
 }
