@@ -993,6 +993,26 @@ input:focus, select:focus {
   text-align: left;
 }
 
+.debt-input-table td {
+  padding: 0.35rem 0.5rem;
+}
+
+.debt-input-table input {
+  width: 100%;
+  min-width: 90px;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  text-align: right;
+  font-family: var(--font-body);
+}
+
+.debt-input-table td:first-child input {
+  text-align: left;
+  min-width: 130px;
+}
+
 .data-table thead th {
   position: sticky;
   top: 0;

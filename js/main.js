@@ -1235,47 +1235,49 @@ document.getElementById("clear-saved-btn").addEventListener("click", () => {
   clearLastPlan();
   clearQuizState();
   resetQuiz();
-  clearNetWorthData();
+  clearLifePlanData();
   showPlanIOStatus("Saved data cleared from this browser.", false);
 });
 
 // --- Net worth tracker (localStorage) ---
 
-const NETWORTH_STORAGE_KEY = "ember-networth";
+const LIFEPLAN_STORAGE_KEY = "ember-lifeplan";
 
-function saveNetWorthData() {
+function saveLifePlanData() {
   try {
     const data = {};
-    document.querySelectorAll(".networth-input").forEach((el) => (data[el.id] = el.value));
-    localStorage.setItem(NETWORTH_STORAGE_KEY, JSON.stringify(data));
+    document.querySelectorAll(".lifeplan-input").forEach((el) => (data[el.id] = el.value));
+    localStorage.setItem(LIFEPLAN_STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
     // localStorage unavailable — fail silently
   }
 }
 
-function loadNetWorthData() {
+function loadLifePlanData() {
   try {
-    const raw = localStorage.getItem(NETWORTH_STORAGE_KEY);
+    const raw = localStorage.getItem(LIFEPLAN_STORAGE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
     Object.entries(data).forEach(([id, value]) => {
       const el = document.getElementById(id);
       if (el) el.value = value;
     });
-    document.querySelectorAll(".networth-input.currency-input").forEach((el) => el.dispatchEvent(new Event("input")));
+    document.querySelectorAll(".lifeplan-input.currency-input").forEach((el) => el.dispatchEvent(new Event("input")));
   } catch (e) {
     // ignore corrupted saved data
   }
 }
 
-function clearNetWorthData() {
+function clearLifePlanData() {
   try {
-    localStorage.removeItem(NETWORTH_STORAGE_KEY);
+    localStorage.removeItem(LIFEPLAN_STORAGE_KEY);
   } catch (e) {
     // ignore
   }
-  document.querySelectorAll(".networth-input").forEach((el) => (el.value = ""));
+  document.querySelectorAll(".lifeplan-input").forEach((el) => (el.value = ""));
   recomputeNetWorth();
+  recomputeEmergencyFund();
+  recomputeDebtPayoff();
 }
 
 function recomputeNetWorth() {
@@ -1303,15 +1305,102 @@ function recomputeNetWorth() {
   noteEl.textContent = note;
 }
 
-document.querySelectorAll(".networth-input").forEach((el) => {
+/** Emergency fund target vs. current savings, updated live. */
+function recomputeEmergencyFund() {
+  const monthlyExpenses = parseCurrency(document.getElementById("ef-monthly-expenses").value);
+  const months = Number(document.getElementById("ef-months").value) || 6;
+  const currentSavings = parseCurrency(document.getElementById("ef-current-savings").value);
+  const target = monthlyExpenses * months;
+  const gap = target - currentSavings;
+
+  document.getElementById("ef-target").textContent = currency(target);
+  document.getElementById("ef-current-display").textContent = currency(currentSavings);
+  const gapEl = document.getElementById("ef-gap");
+  gapEl.textContent = gap > 0 ? currency(gap) : "Fully funded";
+  gapEl.classList.toggle("card-value-small", gap <= 0);
+}
+
+/** Reads the five fixed debt rows, ignoring any left blank/zero-balance. */
+function readDebtRows() {
+  const rows = [];
+  for (let i = 1; i <= 5; i++) {
+    const balance = parseCurrency(document.getElementById(`debt-balance-${i}`).value);
+    if (balance <= 0) continue;
+    rows.push({
+      id: `debt-${i}`,
+      name: document.getElementById(`debt-name-${i}`).value || `Debt ${i}`,
+      balance,
+      apr: Number(document.getElementById(`debt-apr-${i}`).value) || 0,
+      minPayment: parseCurrency(document.getElementById(`debt-min-${i}`).value),
+    });
+  }
+  return rows;
+}
+
+function formatPayoffDuration(months) {
+  const years = Math.floor(months / 12);
+  const rem = months % 12;
+  if (years === 0) return `${rem} mo`;
+  if (rem === 0) return `${years} yr`;
+  return `${years} yr ${rem} mo`;
+}
+
+/** Runs the avalanche vs. snowball comparison and renders the result cards. */
+function recomputeDebtPayoff() {
+  const resultsEl = document.getElementById("debt-payoff-results");
+  const debts = readDebtRows();
+  if (debts.length === 0) {
+    resultsEl.hidden = true;
+    return;
+  }
+
+  const totalMinPayments = debts.reduce((sum, d) => sum + d.minPayment, 0);
+  const extraPayment = parseCurrency(document.getElementById("debt-extra-payment").value);
+  const comparison = compareDebtPayoffMethods(debts, extraPayment);
+
+  if (!comparison.avalanche.sustainable || !comparison.snowball.sustainable) {
+    resultsEl.hidden = false;
+    document.getElementById("debt-avalanche-months").textContent = "—";
+    document.getElementById("debt-snowball-months").textContent = "—";
+    document.getElementById("debt-avalanche-interest").textContent = "";
+    document.getElementById("debt-snowball-interest").textContent = "";
+    document.getElementById("debt-payoff-note").innerHTML = `<span class="strategy-tag">Debt payoff</span><h4>Minimum payments may not be covering interest</h4><p>At these minimum payments and interest rates, one or more debts may never pay down (or would take over 50 years). Double-check your APRs and minimum payments, or add an extra monthly payment above.</p>`;
+    return;
+  }
+
+  resultsEl.hidden = false;
+  document.getElementById("debt-avalanche-months").textContent = formatPayoffDuration(comparison.avalanche.totalMonths);
+  document.getElementById("debt-avalanche-interest").textContent = `${currency(comparison.avalanche.totalInterest)} total interest`;
+  document.getElementById("debt-snowball-months").textContent = formatPayoffDuration(comparison.snowball.totalMonths);
+  document.getElementById("debt-snowball-interest").textContent = `${currency(comparison.snowball.totalInterest)} total interest`;
+
+  const interestDiff = comparison.snowball.totalInterest - comparison.avalanche.totalInterest;
+  const snowballOrder = comparison.snowball.payoffOrder.map((d) => d.name).join(" → ");
+  const noteText =
+    interestDiff > 10
+      ? `Avalanche saves roughly ${currency(interestDiff)} in interest over snowball here — the tradeoff is snowball's faster early wins (paying off ${snowballOrder.split(" → ")[0]} first) for motivation. Either order uses the same total minimum payments (${currency(totalMinPayments)}/mo) plus your extra ${currency(extraPayment)}/mo; a paid-off debt's minimum rolls into the next one, which is what accelerates the payoff.`
+      : `Both methods land at nearly the same total interest here — pick whichever order (${snowballOrder}) feels more motivating to stick with.`;
+
+  document.getElementById("debt-payoff-note").innerHTML = `
+    <span class="strategy-tag">Debt payoff</span>
+    <h4>Snowball order: ${snowballOrder}</h4>
+    <p>${noteText}</p>
+  `;
+}
+
+document.querySelectorAll(".lifeplan-input").forEach((el) => {
   el.addEventListener("input", () => {
     recomputeNetWorth();
-    saveNetWorthData();
+    recomputeEmergencyFund();
+    recomputeDebtPayoff();
+    saveLifePlanData();
   });
 });
 
-loadNetWorthData();
+loadLifePlanData();
 recomputeNetWorth();
+recomputeEmergencyFund();
+recomputeDebtPayoff();
 
 /** One-time convenience prefill from the calculator's own portfolio value — only if the field is still untouched. */
 function prefillNetWorthFromCalculator() {
@@ -1319,7 +1408,7 @@ function prefillNetWorthFromCalculator() {
   if (!lastInput || retirementField.value) return;
   retirementField.value = currency(lastInput.currentPortfolio);
   recomputeNetWorth();
-  saveNetWorthData();
+  saveLifePlanData();
 }
 
 function parseInitialHash() {

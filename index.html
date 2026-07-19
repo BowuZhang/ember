@@ -809,23 +809,23 @@
           <div class="form-grid">
             <label>
               <span class="label-row">Retirement accounts (401k, IRA, etc.)</span>
-              <input type="text" inputmode="numeric" id="nw-retirement" class="networth-input currency-input" placeholder="e.g. $150,000">
+              <input type="text" inputmode="numeric" id="nw-retirement" class="lifeplan-input currency-input" placeholder="e.g. $150,000">
             </label>
             <label>
               <span class="label-row">Cash &amp; savings</span>
-              <input type="text" inputmode="numeric" id="nw-cash" class="networth-input currency-input" placeholder="e.g. $20,000">
+              <input type="text" inputmode="numeric" id="nw-cash" class="lifeplan-input currency-input" placeholder="e.g. $20,000">
             </label>
             <label>
               <span class="label-row">Taxable investments</span>
-              <input type="text" inputmode="numeric" id="nw-taxable" class="networth-input currency-input" placeholder="e.g. $30,000">
+              <input type="text" inputmode="numeric" id="nw-taxable" class="lifeplan-input currency-input" placeholder="e.g. $30,000">
             </label>
             <label>
               <span class="label-row">Home value</span>
-              <input type="text" inputmode="numeric" id="nw-home" class="networth-input currency-input" placeholder="e.g. $400,000">
+              <input type="text" inputmode="numeric" id="nw-home" class="lifeplan-input currency-input" placeholder="e.g. $400,000">
             </label>
             <label>
               <span class="label-row">Other assets (vehicles, business, etc.)</span>
-              <input type="text" inputmode="numeric" id="nw-other-assets" class="networth-input currency-input" placeholder="e.g. $15,000">
+              <input type="text" inputmode="numeric" id="nw-other-assets" class="lifeplan-input currency-input" placeholder="e.g. $15,000">
             </label>
           </div>
 
@@ -833,11 +833,11 @@
           <div class="form-grid">
             <label>
               <span class="label-row">Mortgage balance</span>
-              <input type="text" inputmode="numeric" id="nw-mortgage-balance" class="networth-input currency-input" placeholder="e.g. $250,000">
+              <input type="text" inputmode="numeric" id="nw-mortgage-balance" class="lifeplan-input currency-input" placeholder="e.g. $250,000">
             </label>
             <label>
               <span class="label-row">Other debt (student loans, cards, auto, etc.)</span>
-              <input type="text" inputmode="numeric" id="nw-other-debt" class="networth-input currency-input" placeholder="e.g. $10,000">
+              <input type="text" inputmode="numeric" id="nw-other-debt" class="lifeplan-input currency-input" placeholder="e.g. $10,000">
             </label>
           </div>
 
@@ -866,6 +866,100 @@
           <span class="chevron" aria-hidden="true"></span>
         </button>
         <div class="panel-body" id="panel-emergencyfund-body" hidden>
+          <h3>Emergency fund</h3>
+          <p class="panel-intro">The standard rule of thumb is 3-6 months of essential expenses for dual-income households, and 6-12 months if your income is variable, self-employed, or single-income.</p>
+          <div class="form-grid">
+            <label>
+              <span class="label-row">Monthly essential expenses</span>
+              <input type="text" inputmode="numeric" id="ef-monthly-expenses" class="lifeplan-input currency-input" placeholder="e.g. $3,500">
+            </label>
+            <label>
+              <span class="label-row">Months of coverage desired</span>
+              <input type="number" id="ef-months" class="lifeplan-input" min="1" max="24" placeholder="e.g. 6">
+            </label>
+            <label>
+              <span class="label-row">Current emergency savings</span>
+              <input type="text" inputmode="numeric" id="ef-current-savings" class="lifeplan-input currency-input" placeholder="e.g. $8,000">
+            </label>
+          </div>
+          <div class="summary-cards">
+            <div class="card">
+              <span class="card-label">Target fund size</span>
+              <span class="card-value" id="ef-target">$0</span>
+            </div>
+            <div class="card">
+              <span class="card-label">Current savings</span>
+              <span class="card-value" id="ef-current-display">$0</span>
+            </div>
+            <div class="card">
+              <span class="card-label">Gap to target</span>
+              <span class="card-value" id="ef-gap">$0</span>
+            </div>
+          </div>
+
+          <h3>Debt payoff planner</h3>
+          <p class="panel-intro">Enter up to five debts. <strong>Avalanche</strong> (highest interest rate first) minimizes total interest paid; <strong>snowball</strong> (smallest balance first) tends to keep people motivated even though it costs a bit more — research shows snowball users are more likely to actually finish paying off their debt.</p>
+          <div class="table-scroll">
+            <table class="data-table debt-input-table">
+              <thead>
+                <tr><th>Debt name</th><th>Balance</th><th>APR %</th><th>Min. payment</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="text" id="debt-name-1" class="lifeplan-input" placeholder="e.g. Credit card"></td>
+                  <td><input type="text" inputmode="numeric" id="debt-balance-1" class="lifeplan-input currency-input" placeholder="$5,000"></td>
+                  <td><input type="number" id="debt-apr-1" class="lifeplan-input" step="0.1" placeholder="22.9"></td>
+                  <td><input type="text" inputmode="numeric" id="debt-min-1" class="lifeplan-input currency-input" placeholder="$150"></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="debt-name-2" class="lifeplan-input" placeholder="e.g. Student loan"></td>
+                  <td><input type="text" inputmode="numeric" id="debt-balance-2" class="lifeplan-input currency-input" placeholder="$20,000"></td>
+                  <td><input type="number" id="debt-apr-2" class="lifeplan-input" step="0.1" placeholder="6.5"></td>
+                  <td><input type="text" inputmode="numeric" id="debt-min-2" class="lifeplan-input currency-input" placeholder="$220"></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="debt-name-3" class="lifeplan-input" placeholder="e.g. Auto loan"></td>
+                  <td><input type="text" inputmode="numeric" id="debt-balance-3" class="lifeplan-input currency-input" placeholder=""></td>
+                  <td><input type="number" id="debt-apr-3" class="lifeplan-input" step="0.1" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="debt-min-3" class="lifeplan-input currency-input" placeholder=""></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="debt-name-4" class="lifeplan-input" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="debt-balance-4" class="lifeplan-input currency-input" placeholder=""></td>
+                  <td><input type="number" id="debt-apr-4" class="lifeplan-input" step="0.1" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="debt-min-4" class="lifeplan-input currency-input" placeholder=""></td>
+                </tr>
+                <tr>
+                  <td><input type="text" id="debt-name-5" class="lifeplan-input" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="debt-balance-5" class="lifeplan-input currency-input" placeholder=""></td>
+                  <td><input type="number" id="debt-apr-5" class="lifeplan-input" step="0.1" placeholder=""></td>
+                  <td><input type="text" inputmode="numeric" id="debt-min-5" class="lifeplan-input currency-input" placeholder=""></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="form-grid">
+            <label>
+              <span class="label-row">Extra monthly payment beyond minimums</span>
+              <input type="text" inputmode="numeric" id="debt-extra-payment" class="lifeplan-input currency-input" placeholder="e.g. $200">
+            </label>
+          </div>
+
+          <div id="debt-payoff-results" hidden>
+            <div class="summary-cards">
+              <div class="card">
+                <span class="card-label">Avalanche: debt-free in</span>
+                <span class="card-value" id="debt-avalanche-months">—</span>
+                <span class="card-note" id="debt-avalanche-interest"></span>
+              </div>
+              <div class="card">
+                <span class="card-label">Snowball: debt-free in</span>
+                <span class="card-value" id="debt-snowball-months">—</span>
+                <span class="card-note" id="debt-snowball-interest"></span>
+              </div>
+            </div>
+            <div id="debt-payoff-note" class="strategy-block strategy-block--action"></div>
+          </div>
         </div>
       </section>
 
@@ -911,6 +1005,7 @@
   <script src="js/timeline.js"></script>
   <script src="js/strategy.js"></script>
   <script src="js/rmd.js"></script>
+  <script src="js/debtpayoff.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/content.js"></script>
   <script src="js/monetization.js"></script>
