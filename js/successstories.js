@@ -125,6 +125,28 @@ const SUCCESS_STORIES = [
       { label: "CNBC, 2014", url: "https://www.cnbc.com/2014/12/15/retire-by-40-can-it-be-done.html" },
     ],
   },
+  {
+    id: "jackiecummingskoski",
+    name: "Jackie Cummings Koski",
+    blogUrl: "https://catchinguptofi.com/",
+    retirementYear: 2020,
+    retirementAge: 49,
+    stateCode: "OH",
+    filingStatus: "single",
+    familyAtRetirement: "Single mother — daughter was finishing high school at the time",
+    portfolioAtRetirement: 1300000,
+    annualSpendingAtRetirement: 42500,
+    doubt:
+      "Actually hit her FIRE number at 46, three years before she retired — the math wasn't the problem. What held her back was everything the spreadsheet doesn't capture: walking away from a steady paycheck, employer health insurance, and 20 years of professional identity as an account manager, after starting to save seriously only in her 40s.",
+    whatHappened:
+      "The three years of hesitation turned out to be about emotional readiness, not a real financial gap — the portfolio held after she retired in 2020. She's since become a Certified Financial Planner, co-hosts the Catching Up to FI podcast, and published the book F.I.R.E. for Dummies, turning what started as private anxiety about \"is this really enough\" into a second career helping late starters see that it can still work.",
+    outcomeNote: "Retired at 49 with $1.3M despite starting to save seriously after 40 — now a CFP and published author on catching up late.",
+    sources: [
+      { label: "Black Enterprise", url: "https://www.blackenterprise.com/this-single-mom-retired-by-50-and-built-a-1-3-million-net-worth-while-in-the-fire-movement/" },
+      { label: "AfroTech", url: "https://afrotech.com/how-jackie-cummings-koski-managed-to-retire-at-49-with-1-3m" },
+      { label: "CNBC, 2022", url: "https://www.cnbc.com/2022/09/08/jackie-cummings-koski-single-mom-retired-at-49-with-1point3-million-dollars.html" },
+    ],
+  },
 ];
 
 function storyYearsRetired(story) {
