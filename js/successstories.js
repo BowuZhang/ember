@@ -82,6 +82,49 @@ const SUCCESS_STORIES = [
       { label: "Yahoo Finance, on $230k/yr spending", url: "https://finance.yahoo.com/news/financial-blogger-says-230-000-193011494.html" },
     ],
   },
+  {
+    id: "mr1500",
+    name: "1500 Days to Freedom (Carl Jensen)",
+    blogUrl: "https://www.1500days.com/",
+    retirementYear: 2017,
+    retirementAge: 43,
+    stateCode: "CO",
+    filingStatus: "married",
+    familyAtRetirement: "Married, 2 daughters",
+    portfolioAtRetirement: 1890000,
+    annualSpendingAtRetirement: 50000,
+    doubt:
+      "Pulled the trigger in 2017 worried that stock valuations were unusually high right as he was about to start drawing down his portfolio — a classic fear that a market top would collide with the start of retirement (sequence-of-returns risk).",
+    whatHappened:
+      "Far from stalling out, the portfolio — roughly half real estate, half stocks, not counting his home — kept compounding through years of withdrawals. By the end of 2024, seven years in, it had grown to just over $6 million, gaining nearly $1.5 million in 2024 alone, even after funding the family's whole lifestyle and lending out $650,000 along the way.",
+    outcomeNote: "$1.89M (2017) → $6.06M (end of 2024) — over 3x growth despite years of ongoing withdrawals.",
+    sources: [
+      { label: "Coach Carson interview", url: "https://www.coachcarson.com/43-year-old-retired-1-89-million-portfolio/" },
+      { label: "1500days.com, 2024 year-end review", url: "https://www.1500days.com/2024-review-2025-planning/" },
+    ],
+  },
+  {
+    id: "retireby40",
+    name: "Retire by 40 (Joe Udo)",
+    blogUrl: "https://retireby40.org/",
+    retirementYear: 2012,
+    retirementAge: 38,
+    stateCode: "OR",
+    filingStatus: "married",
+    familyAtRetirement: "Married, with a 15-month-old child at retirement",
+    portfolioAtRetirement: 1000000,
+    annualSpendingAtRetirement: 50000,
+    doubt:
+      "Left a stable Intel engineering job in 2012 with a very young child and a portfolio only just over $1 million — doubted whether that was really enough, and ran a two-year test living on his wife's income alone before fully committing to early retirement.",
+    whatHappened:
+      "Net worth kept growing well within his own conservative \"never spend more than 4%\" rule: about $2 million by 2016 and roughly $2.6 million by 2019. Worth noting honestly — some of the $50,000/yr budget came from rental income, dividends, blog income, and his wife working part-time for a few years, not pure stock-portfolio withdrawals alone, which is itself a common and underrated pattern in early retirement.",
+    outcomeNote: "~$1M (2012) → ~$2.6M (2019), spending held near $50,000/yr the whole way.",
+    sources: [
+      { label: "Bloomberg, 2016", url: "https://www.bloomberg.com/features/2016-early-retirement/" },
+      { label: "Forbes, 2019", url: "https://www.forbes.com/sites/ryanderousseau/2019/08/13/this-father-retired-when-his-child-was-15-months-old-and-just-two-years-after-hearing-about-fire/" },
+      { label: "CNBC, 2014", url: "https://www.cnbc.com/2014/12/15/retire-by-40-can-it-be-done.html" },
+    ],
+  },
 ];
 
 function storyYearsRetired(story) {
