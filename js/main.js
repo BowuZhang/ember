@@ -625,6 +625,56 @@ function renderTaxPersonalization() {
   }
 }
 
+function renderRealStories() {
+  const listEl = document.getElementById("real-stories-list");
+  if (!listEl) return;
+  listEl.innerHTML = SUCCESS_STORIES.map((story) => {
+    const swr = storyImpliedSWR(story);
+    const yearsAgo = storyYearsRetired(story);
+    const stateName = STATE_DATA[story.stateCode] ? STATE_DATA[story.stateCode].name : story.stateCode;
+    const sourcesHtml = story.sources.map((s) => `<a href="${s.url}" target="_blank" rel="noopener">${s.label} ↗</a>`).join(", ");
+    return `
+      <article class="story-card">
+        <div class="story-card-header">
+          <h2>${story.name}</h2>
+          <p class="story-meta">Retired at ${story.retirementAge} in ${story.retirementYear} — ${yearsAgo} years ago</p>
+        </div>
+        <ul class="story-facts">
+          <li><span>Portfolio at retirement</span><strong>${currency(story.portfolioAtRetirement)}</strong></li>
+          <li><span>Annual spending</span><strong>${currency(story.annualSpendingAtRetirement)}/yr</strong></li>
+          <li><span>Implied withdrawal rate</span><strong>${swr.toFixed(1)}%</strong></li>
+          <li><span>State</span><strong>${stateName}</strong></li>
+          <li><span>Family</span><strong>${story.familyAtRetirement}</strong></li>
+        </ul>
+        <div class="strategy-block strategy-block--risk">
+          <span class="strategy-tag">The doubt</span>
+          <p>${story.doubt}</p>
+        </div>
+        <div class="strategy-block strategy-block--action">
+          <span class="strategy-tag">What happened</span>
+          <p>${story.whatHappened}</p>
+        </div>
+        <p class="story-outcome">${story.outcomeNote}</p>
+        <div class="story-actions">
+          <button type="button" class="secondary-btn" data-story-id="${story.id}">Try these numbers in the calculator →</button>
+          <a href="${story.blogUrl}" target="_blank" rel="noopener">Visit blog ↗</a>
+        </div>
+        <p class="story-sources">Sources: ${sourcesHtml}</p>
+      </article>
+    `;
+  }).join("");
+
+  listEl.querySelectorAll("[data-story-id]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const story = SUCCESS_STORIES.find((s) => s.id === btn.getAttribute("data-story-id"));
+      if (!story) return;
+      applyPlan(storyToPlanData(story));
+      showView("calculator");
+      trackGoatCounterEvent(`try-story-${story.id}`);
+    });
+  });
+}
+
 function renderStaticContent() {
   document.getElementById("life-after-categories").innerHTML = LIFE_AFTER_CATEGORIES.map((cat) => {
     const resources = LIFE_AFTER_RESOURCES[cat.title] || [];
@@ -947,7 +997,7 @@ function renderHomeSummary() {
 
 // --- Page navigation ---
 
-const VIEWS = ["home", "calculator", "statistics", "tax-strategies", "retirement-life", "life-planning"];
+const VIEWS = ["home", "calculator", "statistics", "tax-strategies", "retirement-life", "life-planning", "real-stories"];
 
 function showView(name) {
   if (!VIEWS.includes(name)) name = "home";
@@ -1834,6 +1884,7 @@ function selectPersonalityTab(key) {
 
 populateStateDropdowns();
 renderStaticContent();
+renderRealStories();
 renderScenarios();
 initQuiz();
 renderPersonalityTabs(activePersonalityKey);

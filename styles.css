@@ -1234,6 +1234,73 @@ input:focus, select:focus {
   color: var(--muted);
 }
 
+.story-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.story-card-header h2 {
+  color: var(--accent-dark);
+  font-size: 1.25rem;
+  margin-bottom: 0.2rem;
+}
+
+.story-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.1rem;
+}
+
+.story-facts {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem 1.5rem;
+  background: #f9fbfa;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.story-facts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.88rem;
+}
+
+.story-facts li span {
+  color: var(--muted);
+}
+
+.story-outcome {
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin: -0.25rem 0 1.25rem;
+}
+
+.story-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.story-sources {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.story-sources a {
+  color: var(--muted);
+  text-decoration: underline;
+}
+
 .disclaimer {
   margin-top: 1.5rem;
   font-size: 0.78rem;

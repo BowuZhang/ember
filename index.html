@@ -25,6 +25,7 @@
       <button class="topnav-link" data-view="tax-strategies">Tax Strategies</button>
       <button class="topnav-link" data-view="retirement-life">Retirement Life</button>
       <button class="topnav-link" data-view="life-planning">Life Planning</button>
+      <button class="topnav-link" data-view="real-stories">Real Stories</button>
     </div>
   </nav>
 
@@ -71,6 +72,13 @@
           </span>
           <h2>Life Planning</h2>
           <p>Net worth, emergency fund, debt payoff, estate basics, life goals, and insurance — the foundations around retirement, for any age or stage.</p>
+        </button>
+        <button class="menu-card" data-view="real-stories">
+          <span class="menu-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h16v20l-8-4-8 4z"/></svg>
+          </span>
+          <h2>Real Stories</h2>
+          <p>What actually happened to real people who retired early with the same doubts you might have — in the same numbers Ember uses.</p>
         </button>
       </div>
     </main>
@@ -1096,6 +1104,21 @@
     </main>
   </div>
 
+  <div id="view-real-stories" class="view" hidden>
+    <header class="page-header">
+      <h1>Real Stories</h1>
+      <p class="subtitle">Real, publicly documented people who retired early with real doubts — shown in the same numbers Ember collects, so you can compare directly or load their starting point into the calculator.</p>
+    </header>
+    <main>
+      <div id="real-stories-list"></div>
+      <section class="panel">
+        <h3>A note on these stories</h3>
+        <p class="panel-intro">This is a small, honest sample, not a rigorous study. All three retired during the same multi-decade US stock market boom, and people whose early retirement went badly are far less likely to blog about it for 20 years — survivorship bias is real. These stories are useful for intuition, not proof that any specific withdrawal rate is guaranteed to work. Run your own numbers through the Monte Carlo simulation in the calculator for a range of outcomes, not just one path.</p>
+        <p class="panel-intro">If you load a story's numbers into the calculator, don't be surprised if it looks less rosy than reality turned out — Ember's default return assumptions (~2% real after-inflation growth in retirement) are deliberately conservative next to the ~6-7% real returns US stocks actually delivered over these particular stretches, and the calculator's tax gross-up assumes ordinary-income withdrawals, while real FIRE bloggers often pay much less via long-term capital gains and Roth conversion laddering. Try raising the return sliders or lowering the tax burden to see the gap close.</p>
+      </section>
+    </main>
+  </div>
+
   <script src="data/states.js"></script>
   <script src="js/tax.js"></script>
   <script src="js/projection.js"></script>
@@ -1112,6 +1135,7 @@
   <script src="js/debtpayoff.js"></script>
   <script src="js/goals.js"></script>
   <script src="js/insurance.js"></script>
+  <script src="js/successstories.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/content.js"></script>
   <script src="js/monetization.js"></script>
